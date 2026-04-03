@@ -4,7 +4,7 @@ const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
   autoConnect: false,
 });
 
-export const initSocket = (token) => {
+export const initSocket = (token: string) => {
   if (!socket.connected) {
     socket.auth = { token };
     socket.connect();
