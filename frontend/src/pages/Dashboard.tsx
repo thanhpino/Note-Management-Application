@@ -30,7 +30,9 @@ const Dashboard: React.FC = () => {
       } else {
         setActiveLabel(null);
       }
-    } catch (e) { }
+    } catch {
+      // Ignore initial fetch errors
+    }
   };
 
   const fetchNotes = async () => {
@@ -41,7 +43,7 @@ const Dashboard: React.FC = () => {
       const url = labelId ? `/notes?label=${labelId}` : '/notes';
       const res = await api.get(url);
       setNotes(res.data);
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch notes');
     } finally {
       setLoading(false);
@@ -52,10 +54,11 @@ const Dashboard: React.FC = () => {
     try {
       const res = await api.post('/notes', { title: 'Untitled Note', content: '' });
       navigate(`/note/${res.data._id}`);
-    } catch (error) {
+    } catch {
       toast.error('Could not create note');
     }
   };
+
 
   const filteredNotes = notes.filter(note =>
     note.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||

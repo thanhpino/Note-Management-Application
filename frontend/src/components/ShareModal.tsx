@@ -24,9 +24,10 @@ export const ShareModal = ({ isOpen, onClose, noteId }: any) => {
       toast.success('Shared successfully');
       setEmail('');
       api.get(`/notes/${noteId}/shares`).then(res => setShares(res.data));
-    } catch (e: any) {
-      toast.error(e.response?.data?.message || 'Failed to share');
+    } catch (_e: any) {
+      toast.error(_e.response?.data?.message || 'Failed to share');
     }
+
   };
 
   const handleRevoke = async (uid: string) => {
@@ -34,9 +35,10 @@ export const ShareModal = ({ isOpen, onClose, noteId }: any) => {
       await api.delete(`/notes/${noteId}/shares/${uid}`);
       setShares(shares.filter((s: any) => s.userId._id !== uid));
       toast.success('Access revoked');
-    } catch (e: any) {
+    } catch (_e: any) {
       toast.error('Failed to revoke access');
     }
+
   };
 
   return (

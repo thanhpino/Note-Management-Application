@@ -16,9 +16,10 @@ const SharedNotes: React.FC = () => {
         
         // Also clear notifications if any
         await api.put('/users/clear-notification');
-      } catch (e) {
-        console.error(e);
+      } catch (_e) {
+        console.error(_e);
       } finally {
+
         setLoading(false);
       }
     };

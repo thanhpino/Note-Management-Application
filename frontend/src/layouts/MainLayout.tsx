@@ -117,10 +117,11 @@ const MainLayout: React.FC = () => {
                   const { toast } = await import('react-toastify');
                   await api.post('/auth/resend-activation');
                   toast.success('Activation email resent! Check your inbox.');
-                } catch(e) {
+                } catch(_e) {
                   const { toast } = await import('react-toastify');
                   toast.error('Failed to resend email, try again later.');
                 }
+
               }}
               className="bg-amber-500 text-white px-3 py-1 rounded-md hover:bg-amber-600 transition-colors font-bold text-xs shadow-sm">
               Resend Email

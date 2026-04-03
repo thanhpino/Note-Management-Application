@@ -27,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .catch(() => {
           localStorage.removeItem('token');
         })
+
         .finally(() => setLoading(false));
     }
   }, []);

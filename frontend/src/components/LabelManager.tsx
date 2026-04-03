@@ -9,16 +9,19 @@ export const LabelManager = ({ activeLabelId, onSelectLabel }: { activeLabelId?:
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
 
-  useEffect(() => {
-    fetchLabels();
-  }, []);
-
   async function fetchLabels() {
     try {
       const res = await api.get('/labels');
       setLabels(res.data);
-    } catch (e) {}
+    } catch {
+      // Silent fail for initial fetch
+    }
   }
+
+  useEffect(() => {
+    fetchLabels();
+  }, []);
+
 
 
   const handleCreate = async () => {
@@ -28,9 +31,10 @@ export const LabelManager = ({ activeLabelId, onSelectLabel }: { activeLabelId?:
       setLabels([...labels, res.data]);
       setNewLabel('');
       toast.success('Label created');
-    } catch (e) {
+    } catch (_e) {
       toast.error('Failed to create label');
     }
+
   };
 
   const handleUpdate = async (id: string) => {
@@ -39,9 +43,10 @@ export const LabelManager = ({ activeLabelId, onSelectLabel }: { activeLabelId?:
       setLabels(labels.map(l => l._id === id ? { ...l, name: editName } : l));
       setEditingId(null);
       toast.success('Label updated');
-    } catch (e) {
+    } catch (_e) {
       toast.error('Failed to update label');
     }
+
   };
 
   const handleDelete = async (id: string) => {
@@ -49,9 +54,10 @@ export const LabelManager = ({ activeLabelId, onSelectLabel }: { activeLabelId?:
       await api.delete(`/labels/${id}`);
       setLabels(labels.filter(l => l._id !== id));
       toast.success('Label deleted');
-    } catch (e) {
+    } catch (_e) {
       toast.error('Failed to delete label');
     }
+
   };
 
   return (

@@ -102,9 +102,10 @@ const NoteEditor: React.FC = () => {
         socket.emit('note_content_change', { noteId: id, title, content, images, updatedAt: new Date() });
 
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to save note');
     } finally {
+
       setTimeout(() => setSaving(false), 500);
     }
   };
@@ -115,9 +116,10 @@ const NoteEditor: React.FC = () => {
         await api.delete(`/notes/${id}`);
         toast.success('Note deleted');
         navigate('/');
-      } catch (error) {
+      } catch (_error) {
         toast.error('Failed to delete note');
       }
+
     }
   };
 
@@ -174,11 +176,12 @@ const NoteEditor: React.FC = () => {
       // Update with server truth just in case, but usually it matches
       setImages(res.data.images);
       toast.info('Image removed from note');
-    } catch (error) {
+    } catch (_error) {
       // Rollback on failure
       setImages(originalImages);
       toast.error('Failed to remove image from server');
     }
+
   };
 
 
@@ -191,7 +194,7 @@ const NoteEditor: React.FC = () => {
       handleSave();
     }, 1000);
     return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [title, content, selectedLabels, color, images, isNoteReady]);
 
 

@@ -23,9 +23,10 @@ const Profile: React.FC = () => {
       const res = await api.put('/users/profile', { displayName });
       setUser(res.data);
       toast.success('Profile updated successfully');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to update profile');
+    } catch (_error: any) {
+      toast.error(_error.response?.data?.message || 'Failed to update profile');
     } finally {
+
       setLoading(false);
     }
   };
@@ -46,9 +47,10 @@ const Profile: React.FC = () => {
       });
       setUser(res.data);
       toast.success('Avatar updated successfully');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to upload avatar');
+    } catch (_error: any) {
+      toast.error(_error.response?.data?.message || 'Failed to upload avatar');
     } finally {
+
       setUploading(false);
     }
   };
