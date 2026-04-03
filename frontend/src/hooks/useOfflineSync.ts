@@ -21,7 +21,7 @@ export const useOfflineSync = () => {
     };
   }, []);
 
-  const performSync = async () => {
+  async function performSync() {
     try {
       // 1. Get all pending offline changes
       const pendingUpdates = await db.notes.where('syncStatus').equals('pending_update').toArray();
@@ -50,7 +50,8 @@ export const useOfflineSync = () => {
     } catch (error) {
       console.error('Failed to sync offline changes:', error);
     }
-  };
+  }
+
 
   /** Save to Local DB with pending status if offline */
   const saveOffline = async (note: any, action: 'create' | 'update' | 'delete') => {

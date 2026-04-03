@@ -13,12 +13,13 @@ export const LabelManager = ({ activeLabelId, onSelectLabel }: { activeLabelId?:
     fetchLabels();
   }, []);
 
-  const fetchLabels = async () => {
+  async function fetchLabels() {
     try {
       const res = await api.get('/labels');
       setLabels(res.data);
     } catch (e) {}
-  };
+  }
+
 
   const handleCreate = async () => {
     if (!newLabel.trim()) return;
