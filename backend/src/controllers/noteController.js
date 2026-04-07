@@ -4,9 +4,17 @@ const cloudinary = require('cloudinary').v2;
 const { hashPassword, comparePassword } = require('../utils/helpers');
 
 // Helper to check access
-const checkAccess = (note, userId, requireEdit = false) => {
-  if (note.userId.toString() === userId) return true;
-  const share = note.sharedWith.find(s => s.userId.toString() === userId);
+function checkAccess(note, userId, requireEdit = false) {
+  const userIdStr = userId.toString();
+  const ownerId = (note.userId?._id || note.userId).toString();
+
+  if (ownerId === userIdStr) return true;
+
+  const share = note.sharedWith.find(s => {
+    const shareId = (s.userId?._id || s.userId).toString();
+    return shareId === userIdStr;
+  });
+
   if (!share) return false;
   if (requireEdit && share.permission !== 'edit') return false;
   return true;
@@ -20,14 +28,14 @@ exports.getNotes = async (req, res, next) => {
     if (q) query.$text = { $search: q };
     if (label) query.labels = label;
 
-    const notes = await Note.find(query).sort({ isPinned: -1, pinnedAt: -1, updatedAt: -1 });
+    const notes = await Note.find(query).populate('labels').sort({ isPinned: -1, pinnedAt: -1, updatedAt: -1 });
     res.json(notes);
   } catch (error) { next(error); }
 };
 
 exports.getSharedNotes = async (req, res, next) => {
   try {
-    const notes = await Note.find({ 'sharedWith.userId': req.user.id }).populate('userId', 'displayName email').sort('-updatedAt');
+    const notes = await Note.find({ 'sharedWith.userId': req.user.id }).populate('userId', 'displayName email').populate('labels').sort('-updatedAt');
     res.json(notes);
   } catch (error) { next(error); }
 };
@@ -37,6 +45,20 @@ exports.createNote = async (req, res, next) => {
     const { title, content, labels } = req.body;
     const note = await Note.create({ userId: req.user.id, title, content, labels });
     res.status(201).json(note);
+  } catch (error) { next(error); }
+};
+
+exports.getNote = async (req, res, next) => {
+  try {
+    const note = await Note.findById(req.params.id)
+      .populate('userId', 'displayName email')
+      .populate('labels')
+      .populate('sharedWith.userId', 'email displayName');
+    
+    if (!note) return res.status(404).json({ message: 'Note not found' });
+    if (!checkAccess(note, req.user.id)) return res.status(403).json({ message: 'Not authorized' });
+
+    res.json(note);
   } catch (error) { next(error); }
 };
 
@@ -75,8 +97,8 @@ exports.deleteNote = async (req, res, next) => {
 
 exports.togglePin = async (req, res, next) => {
   try {
-    const note = await Note.findOne({ _id: req.params.id, userId: req.user.id });
-    if (!note) return res.status(404).json({ message: 'Note not found' });
+    const note = await Note.findById(req.params.id);
+    if (!note || !checkAccess(note, req.user.id, true)) return res.status(403).json({ message: 'Not authorized' });
 
     note.isPinned = !note.isPinned;
     note.pinnedAt = note.isPinned ? Date.now() : undefined;

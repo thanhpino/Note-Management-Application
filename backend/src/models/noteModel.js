@@ -13,7 +13,7 @@ const noteSchema = new mongoose.Schema({
   notePasswordHash: { type: String }, 
   sharedWith: [{
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    permission: { type: String, enum: ['read-only', 'edit'], required: true },
+    permission: { type: String, enum: ['view', 'edit'], required: true },
     sharedAt: { type: Date, default: Date.now }
   }]
 }, { timestamps: true });

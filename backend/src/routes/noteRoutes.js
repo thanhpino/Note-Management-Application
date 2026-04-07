@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
-  getNotes, getSharedNotes, createNote, updateNote, deleteNote, togglePin,
+  getNotes, getNote, getSharedNotes, createNote, updateNote, deleteNote, togglePin,
   uploadImages, deleteImage, enableLock, changeLock, disableLock, verifyPassword,
   shareNote, getShares, updateShare, revokeShare, attachLabel, detachLabel
 } = require('../controllers/noteController');
@@ -17,6 +17,7 @@ router.route('/')
 router.get('/shared-with-me', getSharedNotes);
 
 router.route('/:id')
+  .get(getNote)
   .put(updateNote)
   .delete(deleteNote);
 

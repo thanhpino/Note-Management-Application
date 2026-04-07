@@ -5,9 +5,17 @@ const Note = require('../models/noteModel');
 module.exports = (server) => {
   const io = socketIo(server, {
     cors: {
-      origin: [process.env.FRONTEND_URL, 'http://localhost:3000', 'http://localhost:5173'],
+      origin: [
+        process.env.FRONTEND_URL,
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:5173'
+      ],
+      methods: ["GET", "POST"],
       credentials: true
-    }
+    },
+    transports: ['websocket', 'polling']
   });
 
   io.use((socket, next) => {

@@ -81,8 +81,16 @@ exports.loginUser = async (req, res, next) => {
     email = email.toLowerCase().trim();
     const user = await User.findOne({ email });
 
+    console.log(`[Login] Attempt for email: ${email}`);
+    if (!user) {
+      console.log(`[Login] User not found for email: ${email}`);
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
-    if (user && (await comparePassword(password, user.passwordHash))) {
+    const isMatch = await comparePassword(password, user.passwordHash);
+    console.log(`[Login] Password match result: ${isMatch}`);
+
+    if (isMatch) {
       res.json({
         _id: user.id,
         displayName: user.displayName,
@@ -95,6 +103,7 @@ exports.loginUser = async (req, res, next) => {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
+    console.error(`[Login] Error: ${error.message}`);
     next(error);
   }
 };
@@ -137,7 +146,7 @@ exports.forgotPassword = async (req, res, next) => {
 
     const otp = generateOTP();
     user.resetOTP = otp;
-    user.resetExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+    user.resetExpiry = Date.now() + 10 * 60 * 1000;
     await user.save();
 
     await sendEmail({
