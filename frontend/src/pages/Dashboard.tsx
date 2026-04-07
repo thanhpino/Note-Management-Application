@@ -92,7 +92,7 @@ const Dashboard: React.FC = () => {
               <List size={18} />
             </button>
           </div>
-          <button onClick={handleCreateNote} className="flex items-center gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-primary/30 dark:shadow-none hover:shadow-primary/50 hover:-translate-y-0.5 transform">
+          <button onClick={handleCreateNote} className="flex items-center gap-2 bg-linear-to-r from-primary to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-primary/30 dark:shadow-none hover:shadow-primary/50 hover:-translate-y-0.5 transform">
             <Plus size={20} strokeWidth={3} />
             <span className="hidden sm:inline">New Note</span>
           </button>
@@ -117,7 +117,7 @@ const Dashboard: React.FC = () => {
             </>
           ) : (
             <>
-              <div className="w-24 h-24 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-full flex items-center justify-center mb-4 shadow-inner">
+              <div className="w-24 h-24 bg-linear-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-full flex items-center justify-center mb-4 shadow-inner">
                 <LayoutGrid size={40} className="text-primary opacity-60" />
               </div>
               <p className="text-2xl font-bold text-gray-600 dark:text-gray-300">Workspace is empty</p>
@@ -146,7 +146,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 )}
 
-                <div className={`absolute top-0 left-0 bg-gradient-to-r from-primary to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity ${viewMode === 'grid' ? 'w-full h-1' : 'h-full w-1'}`} />
+                <div className={`absolute top-0 left-0 bg-linear-to-r from-primary to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity ${viewMode === 'grid' ? 'w-full h-1' : 'h-full w-1'}`} />
 
                 {/* Thumbnail - List Mode */}
                 {viewMode === 'list' && firstImage && (
@@ -162,7 +162,18 @@ const Dashboard: React.FC = () => {
                     {note.sharedWith && note.sharedWith.length > 0 && <span title="Shared">👥</span>}
                     {note.title}
                   </h3>
-                  
+
+                  {/* Label Chips */}
+                  {note.labels && note.labels.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {note.labels.map((label: any) => (
+                        <span key={label._id} className="text-[10px] font-bold text-gray-400 dark:text-gray-500 bg-gray-100/50 dark:bg-gray-700/30 px-2 py-0.5 rounded-md uppercase tracking-tight border border-gray-100 dark:border-gray-700/50">
+                          #{label.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
                   {isLocked ? (
                     <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500 italic text-sm mt-2">
                        <Lock size={14} /> Content hidden for your privacy

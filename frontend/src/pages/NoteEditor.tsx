@@ -7,10 +7,14 @@ import socket from '../services/socket';
 import { ShareModal } from '../components/ShareModal';
 import { PasswordModal } from '../components/PasswordModal';
 import { VerifyPasswordModal } from '../components/VerifyPasswordModal';
+import { useAuth } from '../context/AuthContext';
 
 const NoteEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+
+  const [noteOwnerId, setNoteOwnerId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isPinned, setIsPinned] = useState(false);
@@ -19,14 +23,27 @@ const NoteEditor: React.FC = () => {
   const [isLocked, setIsLocked] = useState(false);
   const [requiresVerification, setRequiresVerification] = useState(false);
   const [isNoteReady, setIsNoteReady] = useState(false);
+  const [currentUserPermission, setCurrentUserPermission] = useState<'view' | 'edit' | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
+  // Derived state
+  const isOwner = React.useMemo(() =>
+    !id || id === 'new' || (!!currentUser && noteOwnerId === (currentUser._id || currentUser.id)),
+    [id, currentUser, noteOwnerId]
+  );
+
+  const canEdit = React.useMemo(() =>
+    isOwner || currentUserPermission === 'edit',
+    [isOwner, currentUserPermission]
+  );
+
   // Labels
   const [availableLabels, setAvailableLabels] = useState<any[]>([]);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+  const [noteLabels, setNoteLabels] = useState<any[]>([]);
   const [showLabelMenu, setShowLabelMenu] = useState(false);
 
   const contentRef = useRef(content);
@@ -39,29 +56,40 @@ const NoteEditor: React.FC = () => {
 
   useEffect(() => {
     if (id && id !== 'new') {
-      api.get(`/notes`)
-        // Actually, let's fetch all and filter.
+      api.get(`/notes/${id}`)
         .then(res => {
-          const note = res.data.find((n: any) => n._id === id);
-          if (note) {
-            setTitle(note.title);
-            setContent(note.content);
-            setIsPinned(note.isPinned || false);
-            setImages(note.images || []);
-            setSelectedLabels(note.labels || []);
-            setColor(note.color || '');
-            setIsLocked(!!note.notePasswordHash);
+          const note = res.data;
+          setTitle(note.title);
+          setContent(note.content);
+          setIsPinned(note.isPinned || false);
+          setImages(note.images || []);
+          // Extract labels IDs since the backend now populates them
+          const pLabels = note.labels || [];
+          setSelectedLabels(pLabels.map((l: any) => typeof l === 'string' ? l : l._id) || []);
+          setNoteLabels(pLabels.filter((l: any) => typeof l !== 'string'));
+          setColor(note.color || '');
+          setIsLocked(!!note.notePasswordHash);
 
-            // Temporary checking logic
-            if (note.notePasswordHash && !localStorage.getItem(`note_token_${note._id}`)) {
-              setRequiresVerification(true);
-            }
-            setIsNoteReady(true);
-            socket.emit('join_note_room', { noteId: id });
-          } else {
-            toast.error('Note not found');
-            navigate('/');
+          // Identify owner and permission
+          const ownerId = note.userId?._id || note.userId;
+          setNoteOwnerId(ownerId);
+
+          const myShare = note.sharedWith?.find((s: any) =>
+            (s.userId._id || s.userId) === (currentUser?._id || currentUser?.id)
+          );
+          if (myShare) setCurrentUserPermission(myShare.permission);
+          else if (ownerId === (currentUser?._id || currentUser?.id)) setCurrentUserPermission('edit');
+
+          // Temporary checking logic
+          if (note.notePasswordHash && !localStorage.getItem(`note_token_${note._id}`)) {
+            setRequiresVerification(true);
           }
+          setIsNoteReady(true);
+          socket.emit('join_note_room', { noteId: id });
+        })
+        .catch(() => {
+          toast.error('Note not found');
+          navigate('/');
         });
     } else {
       setIsNoteReady(true);
@@ -91,6 +119,7 @@ const NoteEditor: React.FC = () => {
   }, []);
 
   const handleSave = async () => {
+    if (!canEdit) return; // Guard for view-only users
     setSaving(true);
     try {
       if (id === 'new') {
@@ -124,6 +153,7 @@ const NoteEditor: React.FC = () => {
   };
 
   const handleTogglePin = async () => {
+    if (!canEdit) return;
     try {
       await api.put(`/notes/${id}/pin`);
       setIsPinned(!isPinned);
@@ -165,6 +195,7 @@ const NoteEditor: React.FC = () => {
   };
 
   const handleRemoveImage = async (url: string) => {
+    if (!canEdit) return;
     const originalImages = [...images];
     // Update local state immediately for instant feedback
     const newImages = images.filter(img => img !== url);
@@ -194,7 +225,7 @@ const NoteEditor: React.FC = () => {
       handleSave();
     }, 1000);
     return () => clearTimeout(timeoutId);
-     
+
   }, [title, content, selectedLabels, color, images, isNoteReady]);
 
 
@@ -234,18 +265,24 @@ const NoteEditor: React.FC = () => {
           )}
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={handleTogglePin} className={`p-2 rounded-xl transition-all ${isPinned ? 'text-amber-500 bg-amber-50' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'}`} title={isPinned ? "Unpin" : "Pin"}>
-            <Pin size={20} className={isPinned ? 'fill-current' : ''} />
-          </button>
-          <button onClick={() => setShowShareModal(true)} className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all" title="Share Note">
-            <Share2 size={20} />
-          </button>
-          <button onClick={() => setShowPasswordModal(true)} className={`p-2 rounded-xl transition-all ${isLocked ? 'text-emerald-500 bg-emerald-50' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'}`} title="Lock Note">
-            {isLocked ? <Lock size={20} /> : <Unlock size={20} />}
-          </button>
-          <button onClick={handleDelete} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all" title="Delete">
-            <Trash2 size={20} />
-          </button>
+          {canEdit && (
+            <button onClick={handleTogglePin} className={`p-2 rounded-xl transition-all ${isPinned ? 'text-amber-500 bg-amber-50' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'}`} title={isPinned ? "Unpin" : "Pin"}>
+              <Pin size={20} className={isPinned ? 'fill-current' : ''} />
+            </button>
+          )}
+          {isOwner && (
+            <>
+              <button onClick={() => setShowShareModal(true)} className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all" title="Share Note">
+                <Share2 size={20} />
+              </button>
+              <button onClick={() => setShowPasswordModal(true)} className={`p-2 rounded-xl transition-all ${isLocked ? 'text-emerald-500 bg-emerald-50' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'}`} title="Lock Note">
+                {isLocked ? <Lock size={20} /> : <Unlock size={20} />}
+              </button>
+              <button onClick={handleDelete} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all" title="Delete">
+                <Trash2 size={20} />
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -254,6 +291,7 @@ const NoteEditor: React.FC = () => {
           type="text"
           value={title}
           onChange={e => setTitle(e.target.value)}
+          readOnly={!canEdit}
           placeholder="Note Title"
           className={`text-4xl font-extrabold bg-transparent border-none outline-none text-gray-900 ${!color && 'dark:text-white'} placeholder-gray-300 ${!color && 'dark:placeholder-gray-600'} focus:ring-0 w-full`}
         />
@@ -261,18 +299,20 @@ const NoteEditor: React.FC = () => {
         {selectedLabels.length > 0 && (
           <div className="flex flex-wrap gap-2 px-1">
             {selectedLabels.map(id => {
-              const label = availableLabels.find(l => l._id === id);
+              const label = availableLabels.find(l => l._id === id) || noteLabels.find(l => l._id === id);
               if (!label) return null;
               return (
                 <div key={id} className="flex items-center gap-1.5 bg-primary/10 dark:bg-primary/20 text-primary dark:text-indigo-300 px-3 py-1 rounded-full border border-primary/20 group/chip hover:bg-primary/20 transition-all">
                   <Tag size={12} />
                   <span className="text-sm font-medium">{label.name}</span>
-                  <button 
-                    onClick={() => setSelectedLabels(selectedLabels.filter(sid => sid !== id))}
-                    className="hover:text-red-500 transition-colors p-0.5 rounded-full hover:bg-white/50 dark:hover:bg-gray-800/50"
-                  >
-                    <X size={14} />
-                  </button>
+                  {canEdit && (
+                    <button
+                      onClick={() => setSelectedLabels(selectedLabels.filter(sid => sid !== id))}
+                      className="hover:text-red-500 transition-colors p-0.5 rounded-full hover:bg-white/50 dark:hover:bg-gray-800/50"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -282,6 +322,7 @@ const NoteEditor: React.FC = () => {
         <textarea
           value={content}
           onChange={e => setContent(e.target.value)}
+          readOnly={!canEdit}
           placeholder="Start writing your thoughts..."
           className={`flex-1 w-full text-lg leading-relaxed text-gray-700 ${!color && 'dark:text-gray-300'} bg-transparent border-none outline-none resize-none placeholder-gray-400 ${!color && 'dark:placeholder-gray-600'} focus:ring-0`}
         />
@@ -291,7 +332,7 @@ const NoteEditor: React.FC = () => {
       <footer className={`px-6 py-4 border-t border-gray-100/30 dark:border-gray-700/60 flex flex-col gap-6 ${color ? 'bg-black/5' : 'bg-gray-50/50 dark:bg-gray-800/50'}`}>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap gap-2">
-            {colors.map(c => (
+            {canEdit && colors.map(c => (
               <button
                 key={c.name}
                 onClick={() => setColor(c.value)}
@@ -301,9 +342,16 @@ const NoteEditor: React.FC = () => {
               />
             ))}
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
-            {content.length} characters
-          </span>
+          <div className="flex items-center gap-3">
+            {currentUserPermission && (
+              <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${currentUserPermission === 'edit' ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
+                {currentUserPermission === 'edit' ? 'Editor Access' : 'View Only'}
+              </span>
+            )}
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+              {content.length} characters
+            </span>
+          </div>
         </div>
 
         {images.length > 0 && (
@@ -313,7 +361,7 @@ const NoteEditor: React.FC = () => {
                 <img src={url} alt="attached" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                 <button
                   onClick={() => handleRemoveImage(url)}
-                  className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center backdrop-blur-[2px] transition-all"
+                  className={`absolute inset-0 bg-black/40 text-white ${canEdit ? 'opacity-0 group-hover:opacity-100' : 'hidden'} flex items-center justify-center backdrop-blur-[2px] transition-all`}
                   title="Remove Image"
                 >
                   <div className="bg-red-500 p-2 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-transform">
@@ -331,54 +379,58 @@ const NoteEditor: React.FC = () => {
             className="hidden" ref={fileInputRef}
             onChange={handleImageUpload}
           />
-          
+
           <div className="flex items-center bg-white/50 dark:bg-gray-800/50 p-1 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm backdrop-blur-sm">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={id === 'new' || uploadingImage}
-              className="px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:text-primary hover:shadow-sm transition-all disabled:opacity-50"
-            >
-              {uploadingImage ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} className="text-indigo-500" />}
-              {id === 'new' ? 'Save to Add Image' : 'Add Image'}
-            </button>
+            {canEdit && (
+              <>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={id === 'new' || uploadingImage}
+                  className="px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:text-primary hover:shadow-sm transition-all disabled:opacity-50"
+                >
+                  {uploadingImage ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} className="text-indigo-500" />}
+                  {id === 'new' ? 'Save to Add Image' : 'Add Image'}
+                </button>
 
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
+                <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
 
-            <div className="relative">
-              <button 
-                onClick={() => setShowLabelMenu(!showLabelMenu)} 
-                className={`px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-semibold transition-all ${showLabelMenu ? 'bg-white dark:bg-gray-700 text-primary shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:text-primary hover:shadow-sm'}`}
-              >
-                <Hash size={16} className="text-purple-500" />
-                Labels {selectedLabels.length > 0 && <span className="bg-primary/10 px-1.5 rounded text-[10px] text-primary">{selectedLabels.length}</span>}
-              </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLabelMenu(!showLabelMenu)}
+                    className={`px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-semibold transition-all ${showLabelMenu ? 'bg-white dark:bg-gray-700 text-primary shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 hover:text-primary hover:shadow-sm'}`}
+                  >
+                    <Hash size={16} className="text-purple-500" />
+                    Labels {selectedLabels.length > 0 && <span className="bg-primary/10 px-1.5 rounded text-[10px] text-primary">{selectedLabels.length}</span>}
+                  </button>
 
-              {showLabelMenu && (
-                <div className="absolute bottom-full left-0 mb-4 w-56 bg-white dark:bg-gray-800 shadow-2xl border border-gray-100 dark:border-gray-700/60 rounded-2xl p-3 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                  <p className="text-[10px] font-black text-gray-400 mb-3 px-2 uppercase tracking-widest">Organize with Labels</p>
-                  <div className="max-h-48 overflow-y-auto pr-1 flex flex-col gap-1 custom-scrollbar">
-                    {availableLabels.length === 0 ? (
-                      <p className="text-xs px-2 py-4 text-center text-gray-400 italic">No labels created yet</p>
-                    ) : (
-                      availableLabels.map(lbl => (
-                        <label key={lbl._id} className="flex items-center gap-3 px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl cursor-pointer transition-all group/label">
-                          <input
-                            type="checkbox"
-                            className="rounded-md text-primary focus:ring-primary w-4 h-4 bg-gray-100 border-gray-300 dark:bg-gray-700 dark:border-gray-600 transition-all border-2 group-hover/label:border-primary"
-                            checked={selectedLabels.includes(lbl._id)}
-                            onChange={(e) => {
-                              if (e.target.checked) setSelectedLabels([...selectedLabels, lbl._id]);
-                              else setSelectedLabels(selectedLabels.filter(id => id !== lbl._id));
-                            }}
-                          />
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 line-clamp-1">{lbl.name}</span>
-                        </label>
-                      ))
-                    )}
-                  </div>
+                  {showLabelMenu && (
+                    <div className="absolute bottom-full left-0 mb-4 w-56 bg-white dark:bg-gray-800 shadow-2xl border border-gray-100 dark:border-gray-700/60 rounded-2xl p-3 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                      <p className="text-[10px] font-black text-gray-400 mb-3 px-2 uppercase tracking-widest">Organize with Labels</p>
+                      <div className="max-h-48 overflow-y-auto pr-1 flex flex-col gap-1 custom-scrollbar">
+                        {availableLabels.length === 0 ? (
+                          <p className="text-xs px-2 py-4 text-center text-gray-400 italic">No labels created yet</p>
+                        ) : (
+                          availableLabels.map(lbl => (
+                            <label key={lbl._id} className="flex items-center gap-3 px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl cursor-pointer transition-all group/label">
+                              <input
+                                type="checkbox"
+                                className="rounded-md text-primary focus:ring-primary w-4 h-4 bg-gray-100 border-gray-300 dark:bg-gray-700 dark:border-gray-600 transition-all border-2 group-hover/label:border-primary"
+                                checked={selectedLabels.includes(lbl._id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) setSelectedLabels([...selectedLabels, lbl._id]);
+                                  else setSelectedLabels(selectedLabels.filter(id => id !== lbl._id));
+                                }}
+                              />
+                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 line-clamp-1">{lbl.name}</span>
+                            </label>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
       </footer>

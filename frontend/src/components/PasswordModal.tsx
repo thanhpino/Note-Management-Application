@@ -43,7 +43,7 @@ export const PasswordModal = ({ isOpen, onClose, noteId, isLocked, onLockSuccess
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+    <div className="fixed inset-0 bg-black/50 z-100 flex items-center justify-center backdrop-blur-sm">
       <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold dark:text-white flex items-center gap-2">
@@ -62,24 +62,24 @@ export const PasswordModal = ({ isOpen, onClose, noteId, isLocked, onLockSuccess
         )}
         <div className="space-y-4 mb-6">
           {(mode === 'remove' || mode === 'change') && (
-            <input 
-              type="password" 
-              placeholder="Enter current password" 
+            <input
+              type="password"
+              placeholder="Enter current password"
               value={currentPassword} onChange={e => setCurrentPassword(e.target.value)}
               className="w-full px-4 py-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none focus:ring-2 focus:ring-primary"
             />
           )}
           {(mode === 'set' || mode === 'change') && (
             <>
-              <input 
-                type="password" 
-                placeholder="Enter new password" 
+              <input
+                type="password"
+                placeholder="Enter new password"
                 value={password} onChange={e => setPassword(e.target.value)}
                 className="w-full px-4 py-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none focus:ring-2 focus:ring-primary"
               />
-              <input 
-                type="password" 
-                placeholder="Confirm new password" 
+              <input
+                type="password"
+                placeholder="Confirm new password"
                 value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
                 className="w-full px-4 py-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none focus:ring-2 focus:ring-primary"
               />
@@ -87,7 +87,7 @@ export const PasswordModal = ({ isOpen, onClose, noteId, isLocked, onLockSuccess
           )}
         </div>
 
-        <button onClick={handleAction} className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl transition-all shadow-md">
+        <button onClick={handleAction} className="w-full bg-linear-to-r from-primary to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl transition-all shadow-md">
           {mode === 'remove' ? 'Remove Lock' : mode === 'change' ? 'Change Password' : 'Enable Lock'}
         </button>
       </div>

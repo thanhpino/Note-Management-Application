@@ -47,29 +47,59 @@ const SharedNotes: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {notes.map(note => (
-            <div onClick={() => navigate(`/note/${note._id}`)} key={note._id} className="group bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/60 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden flex flex-col h-64">
-               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-indigo-500 opacity-80" />
-               
-               <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2 line-clamp-2 leading-tight flex items-center gap-2">
-                  {note.notePasswordHash && <Lock size={16} className="text-emerald-500 shrink-0" />}
-                  {note.title}
-               </h3>
-               
-               <div className="flex items-center gap-2 mb-4 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 w-fit px-3 py-1 rounded-full">
-                 <Users size={12} />
-                 <span>Shared by Owner</span>
-               </div>
+          {notes.map(note => {
+            const isLocked = !!note.notePasswordHash;
+            const hasImages = note.images && note.images.length > 0;
+            const firstImage = hasImages && !isLocked ? note.images[0] : null;
 
-               <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 leading-relaxed flex-1">
-                 {note.content}
-               </p>
-               
-               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700/60 flex justify-between items-center shrink-0">
-                 <span className="text-xs font-medium text-gray-400 dark:text-gray-500">{new Date(note.updatedAt).toLocaleDateString()}</span>
-               </div>
-            </div>
-          ))}
+            return (
+              <div 
+                onClick={() => navigate(`/note/${note._id}`)} 
+                key={note._id} 
+                style={{ backgroundColor: note.color }}
+                className={`group ${note.color ? '' : 'bg-white dark:bg-gray-800'} p-0 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/60 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer relative overflow-hidden flex flex-col h-72`}
+              >
+                 {/* Image Preview */}
+                 {firstImage && (
+                   <div className="h-32 w-full overflow-hidden border-b border-gray-100/30 dark:border-gray-700/30">
+                     <img src={firstImage} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                   </div>
+                 )}
+
+                 <div className="p-6 flex flex-col flex-1">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-blue-400 to-indigo-500 opacity-80" />
+                    
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2 line-clamp-2 leading-tight flex items-center gap-2">
+                       {isLocked && <Lock size={16} className="text-emerald-500 shrink-0" />}
+                       {note.title}
+                    </h3>
+                    
+                    <div className="flex flex-wrap gap-2 mt-1 mb-4">
+                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-white/50 dark:bg-indigo-900/30 w-fit px-3 py-1 rounded-full shadow-xs">
+                        <Users size={10} />
+                        <span>Shared</span>
+                      </div>
+                      {note.labels?.map((label: any) => (
+                        <div key={label._id} className="flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-white/40 dark:bg-gray-700/50 dark:text-gray-400 px-2.5 py-1 rounded-full uppercase tracking-tight shadow-xs">
+                          #{label.name}
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className={`text-sm line-clamp-3 leading-relaxed flex-1 ${note.color ? 'text-gray-800' : 'text-gray-600 dark:text-gray-400'}`}>
+                      {note.content}
+                    </p>
+                    
+                    <div className="mt-4 pt-4 border-t border-black/5 dark:border-gray-700/60 flex justify-between items-center shrink-0">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">{new Date(note.updatedAt).toLocaleDateString()}</span>
+                      {note.userId?.displayName && (
+                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 rounded">By {note.userId.displayName}</span>
+                      )}
+                    </div>
+                 </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

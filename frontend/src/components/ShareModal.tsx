@@ -11,8 +11,8 @@ export const ShareModal = ({ isOpen, onClose, noteId }: any) => {
   useEffect(() => {
     if (isOpen && noteId && noteId !== 'new') {
       api.get(`/notes/${noteId}/shares`)
-         .then(res => setShares(res.data))
-         .catch(() => {});
+        .then(res => setShares(res.data))
+        .catch(() => { });
     }
   }, [isOpen, noteId]);
 
@@ -20,7 +20,7 @@ export const ShareModal = ({ isOpen, onClose, noteId }: any) => {
 
   const handleShare = async () => {
     try {
-      await api.post(`/notes/${noteId}/share`, { email, permission });
+      await api.post(`/notes/${noteId}/shares`, { email, permission });
       toast.success('Shared successfully');
       setEmail('');
       api.get(`/notes/${noteId}/shares`).then(res => setShares(res.data));
@@ -42,7 +42,7 @@ export const ShareModal = ({ isOpen, onClose, noteId }: any) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+    <div className="fixed inset-0 bg-black/50 z-100 flex items-center justify-center backdrop-blur-sm">
       <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold dark:text-white">Share Note</h2>
@@ -52,9 +52,9 @@ export const ShareModal = ({ isOpen, onClose, noteId }: any) => {
         </div>
 
         <div className="flex gap-2 mb-6">
-          <input 
-            type="email" 
-            placeholder="User Email" 
+          <input
+            type="email"
+            placeholder="User Email"
             value={email} onChange={e => setEmail(e.target.value)}
             className="flex-1 px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none focus:border-primary"
           />
@@ -75,7 +75,7 @@ export const ShareModal = ({ isOpen, onClose, noteId }: any) => {
                 <p className="text-xs text-gray-500 capitalize">{s.permission}</p>
               </div>
               <button onClick={() => handleRevoke(s.userId._id)} className="text-red-500 p-1 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
-                <Trash2 size={16}/>
+                <Trash2 size={16} />
               </button>
             </div>
           ))}
