@@ -5,6 +5,8 @@ import api from '../services/api';
 import { User, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+import { motion } from 'framer-motion';
+
 const Register: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -38,9 +40,14 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="w-full">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="w-full"
+    >
       <div className="text-center mb-10">
-        <h2 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 mb-2">Create Account</h2>
+        <h2 className="text-4xl font-extrabold bg-clip-text text-transparent bg-linear-to-r from-primary to-purple-500 mb-2">Create Account</h2>
         <p className="text-gray-500 dark:text-gray-400">Join us and start organizing your thoughts</p>
       </div>
       
@@ -101,7 +108,7 @@ const Register: React.FC = () => {
 
         <button 
           disabled={loading}
-          className="w-full mt-2 flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-200 dark:shadow-none hover:shadow-xl hover:scale-[1.02] disabled:opacity-70 disabled:hover:scale-100"
+          className="w-full mt-2 flex items-center justify-center gap-2 bg-linear-to-r from-primary to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-200 dark:shadow-none hover:shadow-xl hover:scale-[1.02] disabled:opacity-70 disabled:hover:scale-100"
         >
           {loading ? <Loader2 className="animate-spin" size={20} /> : (
             <>
@@ -117,7 +124,7 @@ const Register: React.FC = () => {
           Sign In
         </Link>
       </p>
-    </div>
+    </motion.div>
   );
 };
 
