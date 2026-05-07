@@ -38,4 +38,4 @@ USER www-data
 
 # Expose port and start Laravel server
 EXPOSE 8000
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
