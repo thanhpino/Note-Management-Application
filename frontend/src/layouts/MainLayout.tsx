@@ -79,16 +79,16 @@ const MainLayout: React.FC = () => {
 
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <Link to="/profile" className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800/80 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors group">
-            {user.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user.displayName} className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all" />
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user?.displayName || 'User'} className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all" />
             ) : (
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-500 text-white flex items-center justify-center font-bold text-lg shadow-inner">
-                {user.displayName.charAt(0).toUpperCase()}
+                {(user?.displayName || 'U').charAt(0).toUpperCase()}
               </div>
             )}
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-bold truncate dark:text-white group-hover:text-primary transition-colors">{user.displayName}</p>
-              <p className="text-xs text-gray-500 truncate">{user.email}</p>
+              <p className="text-sm font-bold truncate dark:text-white group-hover:text-primary transition-colors">{user?.displayName || 'User'}</p>
+              <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
             </div>
             <button 
               onClick={(e) => {
@@ -107,9 +107,9 @@ const MainLayout: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden min-w-0 bg-gray-50/50 dark:bg-gray-900/50">
-        {!user.isVerified && (
+        {user && !user.isVerified && (
           <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-6 py-2 text-sm flex items-center justify-center gap-3 shadow-sm border-b border-amber-200 dark:border-amber-800">
-            <span>Please check your email ({user.email}) to activate your account.</span>
+            <span>Please check your email ({user?.email}) to activate your account.</span>
             <button 
               onClick={async () => {
                 try {

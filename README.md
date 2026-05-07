@@ -1,8 +1,8 @@
-# Note Management Web Application (MERN Stack)
+# Note Management Web Application
 
-**Sinh viên:** [ĐIỀN TÊN TẠI ĐÂY]  
-**MSSV:** [ĐIỀN MSSV TẠI ĐÂY]  
-**Deployment URL:** [ĐIỀN URL TẠI ĐÂY]  
+**Sinh viên:** Trương Minh Thành  
+**MSSV:** 524H0032
+**Deployment URL:** https://notes.thanhminh.dev
 
 ---
 
@@ -25,7 +25,7 @@
 
 ## 💻 Hướng dẫn cài đặt & Chạy dự án
 
-### Cách 1: Sử dụng Docker Compose (Khuyên dùng)
+### Cách 1: Sử dụng Docker Compose
 Đảm bảo bạn đã cài đặt Docker và Docker Desktop.
 1. Mở Terminal tại thư mục gốc của dự án.
 2. Chạy lệnh:

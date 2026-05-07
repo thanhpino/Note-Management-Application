@@ -129,20 +129,21 @@ const Dashboard: React.FC = () => {
         <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>
           {filteredNotes.map(note => {
             const isLocked = !!note.notePasswordHash;
-            const hasImages = note.images && note.images.length > 0;
-            const firstImage = hasImages && !isLocked ? note.images[0] : null;
+            const firstImage = note.images && note.images.length > 0 ? note.images[0] : null;
 
             return (
               <div
-                onClick={() => navigate(`/note/${note._id}`)}
-                key={note._id}
-                style={{ backgroundColor: note.color }}
-                className={`group ${note.color ? '' : 'bg-white/80 dark:bg-gray-800/80'} backdrop-blur-xl rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 dark:border-gray-700/60 hover:border-primary/30 dark:hover:border-primary/50 transition-all duration-300 cursor-pointer relative overflow-hidden flex ${viewMode === 'grid' ? 'flex-col h-72 hover:-translate-y-1.5' : 'flex-row items-center gap-4 p-4 hover:translate-x-1'}`}
+                key={note.id || note._id}
+                onClick={() => navigate(`/note/${note.id || note._id}`)}
+                className={`group relative bg-white dark:bg-gray-800 rounded-3xl shadow-sm hover:shadow-xl border border-gray-100 dark:border-gray-700/50 transition-all duration-300 cursor-pointer flex ${viewMode === 'grid' ? 'flex-col h-72 hover:-translate-y-1.5' : 'flex-row items-center gap-4 p-4 hover:translate-x-1'} overflow-hidden`}
+                style={{ 
+                  backgroundColor: note.color && !document.documentElement.classList.contains('dark') ? note.color : undefined 
+                }}
               >
                 {/* Image Preview - Grid Mode */}
                 {viewMode === 'grid' && firstImage && (
-                  <div className="h-32 w-full overflow-hidden border-b border-gray-100 dark:border-gray-700/30">
-                    <img src={firstImage} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="h-32 w-full overflow-hidden">
+                    <img src={firstImage} alt="Preview" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                   </div>
                 )}
 
@@ -167,7 +168,7 @@ const Dashboard: React.FC = () => {
                   {note.labels && note.labels.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {note.labels.map((label: any) => (
-                        <span key={label._id} className="text-[10px] font-bold text-gray-400 dark:text-gray-500 bg-gray-100/50 dark:bg-gray-700/30 px-2 py-0.5 rounded-md uppercase tracking-tight border border-gray-100 dark:border-gray-700/50">
+                        <span key={label.id || label._id} className="text-[10px] font-bold text-gray-400 dark:text-gray-500 bg-gray-100/50 dark:bg-gray-700/30 px-2 py-0.5 rounded-md uppercase tracking-tight border border-gray-100 dark:border-gray-700/50">
                           #{label.name}
                         </span>
                       ))}

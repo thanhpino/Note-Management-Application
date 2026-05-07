@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Share2, Trash2, Unlock, Lock, Loader2, Image as ImageIcon, Pin, X, Hash, Tag } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../services/api';
-import socket from '../services/socket';
+import echo from '../services/echo';
 import { ShareModal } from '../components/ShareModal';
 import { PasswordModal } from '../components/PasswordModal';
 import { VerifyPasswordModal } from '../components/VerifyPasswordModal';
@@ -54,6 +54,24 @@ const NoteEditor: React.FC = () => {
     titleRef.current = title;
   }, [content, title]);
 
+  // Real-time Collaboration with Laravel Reverb
+  useEffect(() => {
+    if (id && id !== 'new') {
+      const channel = echo.private(`note.${id}`)
+        .listen('.note.updated', (data: any) => {
+          const updatedNote = data.note;
+          setTitle(updatedNote.title);
+          setContent(updatedNote.content);
+          setImages(updatedNote.images);
+          setColor(updatedNote.color);
+        });
+
+      return () => {
+        echo.leave(`note.${id}`);
+      };
+    }
+  }, [id]);
+
   useEffect(() => {
     if (id && id !== 'new') {
       api.get(`/notes/${id}`)
@@ -85,7 +103,6 @@ const NoteEditor: React.FC = () => {
             setRequiresVerification(true);
           }
           setIsNoteReady(true);
-          socket.emit('join_note_room', { noteId: id });
         })
         .catch(() => {
           toast.error('Note not found');
@@ -96,22 +113,10 @@ const NoteEditor: React.FC = () => {
     }
 
     return () => {
-      if (id && id !== 'new') {
-        socket.emit('leave_note_room', { noteId: id });
-      }
+      // Cleanup for Reverb is handled in the other useEffect
     };
   }, [id, navigate]);
 
-  useEffect(() => {
-    socket.on('note_updated', (data) => {
-      setTitle(data.title);
-      setContent(data.content);
-      toast.info('Note updated by collaborator', { autoClose: 2000, position: 'bottom-left' });
-    });
-    return () => {
-      socket.off('note_updated');
-    };
-  }, []);
 
   useEffect(() => {
     // Load available labels
@@ -124,12 +129,13 @@ const NoteEditor: React.FC = () => {
     try {
       if (id === 'new') {
         const res = await api.post('/notes', { title, content, labels: selectedLabels, color });
-        navigate(`/note/${res.data._id}`, { replace: true });
-        toast.success('Note created');
+        const newId = res.data._id || res.data.id;
+        if (newId) {
+          navigate(`/note/${newId}`, { replace: true });
+          toast.success('Note created');
+        }
       } else {
         await api.put(`/notes/${id}`, { title, content, labels: selectedLabels, color, images });
-        socket.emit('note_content_change', { noteId: id, title, content, images, updatedAt: new Date() });
-
       }
     } catch (_error) {
       toast.error('Failed to save note');
@@ -139,16 +145,18 @@ const NoteEditor: React.FC = () => {
     }
   };
 
+  const [isDeleting, setIsDeleting] = useState(false);
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this note?')) {
+      setIsDeleting(true);
       try {
         await api.delete(`/notes/${id}`);
         toast.success('Note deleted');
         navigate('/');
       } catch (_error) {
+        setIsDeleting(false);
         toast.error('Failed to delete note');
       }
-
     }
   };
 
@@ -180,7 +188,7 @@ const NoteEditor: React.FC = () => {
     if (!e.target.files || e.target.files.length === 0 || id === 'new') return;
     setUploadingImage(true);
     const formData = new FormData();
-    Array.from(e.target.files).forEach(f => formData.append('images', f));
+    Array.from(e.target.files).forEach(f => formData.append('images[]', f));
     try {
       const res = await api.post(`/notes/${id}/images`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -220,13 +228,13 @@ const NoteEditor: React.FC = () => {
 
   // Debounced Auto-save simulator (1000ms as requested)
   useEffect(() => {
-    if (!isNoteReady || (!title && !content)) return; // Guard for empty content
+    if (!isNoteReady || isDeleting || (!title && !content)) return; // Guard for empty content or deleting
     const timeoutId = setTimeout(() => {
       handleSave();
     }, 1000);
     return () => clearTimeout(timeoutId);
 
-  }, [title, content, selectedLabels, color, images, isNoteReady]);
+  }, [title, content, selectedLabels, color, images, isNoteReady, isDeleting]);
 
 
   if (!isNoteReady) {
@@ -251,7 +259,7 @@ const NoteEditor: React.FC = () => {
   return (
     <div
       className={`h-full flex flex-col max-w-4xl mx-auto w-full shadow-xl rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700/60 transition-colors duration-500`}
-      style={{ backgroundColor: color || undefined }}
+      style={{ backgroundColor: color && !document.documentElement.classList.contains('dark') ? color : undefined }}
     >
       <header className={`px-6 py-4 border-b border-gray-100/30 dark:border-gray-700/60 flex items-center justify-between ${color ? 'bg-black/5' : 'bg-gray-50/50 dark:bg-gray-800/50'}`}>
         <div className="flex items-center gap-4">
@@ -320,12 +328,32 @@ const NoteEditor: React.FC = () => {
         )}
 
         <textarea
+          placeholder="Empty note"
           value={content}
-          onChange={e => setContent(e.target.value)}
-          readOnly={!canEdit}
-          placeholder="Start writing your thoughts..."
-          className={`flex-1 w-full text-lg leading-relaxed text-gray-700 ${!color && 'dark:text-gray-300'} bg-transparent border-none outline-none resize-none placeholder-gray-400 ${!color && 'dark:placeholder-gray-600'} focus:ring-0`}
+          onChange={(e) => setContent(e.target.value)}
+          className="w-full flex-1 bg-transparent border-none outline-none resize-none text-lg text-gray-700 dark:text-gray-200 placeholder-gray-400/60 leading-relaxed scrollbar-hide"
         />
+
+        {/* Image Gallery inside Note */}
+        {images && images.length > 0 && (
+          <div className="flex flex-wrap gap-3 mt-4 mb-2 overflow-x-auto pb-2 scrollbar-hide">
+            {images.map((url: string, index: number) => (
+              <div key={index} className="relative group/img min-w-[120px] h-[120px]">
+                <img
+                  src={url}
+                  alt={`attachment-${index}`}
+                  className="w-full h-full object-cover rounded-xl shadow-sm border border-black/5"
+                />
+                <button
+                  onClick={() => handleRemoveImage(url)}
+                  className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
 

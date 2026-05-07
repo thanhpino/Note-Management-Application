@@ -10,18 +10,18 @@ const Profile: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [displayName, setDisplayName] = useState(user?.name || '');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!displayName) return toast.error('Display Name is required');
+    if (!displayName) return toast.error('Name is required');
 
     setLoading(true);
     try {
-      const res = await api.put('/users/profile', { displayName });
-      setUser(res.data);
+      const res = await api.put('/users/profile', { name: displayName });
+      setUser(res.data.user || res.data);
       toast.success('Profile updated successfully');
     } catch (_error: any) {
       toast.error(_error.response?.data?.message || 'Failed to update profile');
@@ -42,10 +42,10 @@ const Profile: React.FC = () => {
 
     setUploading(true);
     try {
-      const res = await api.put('/users/avatar', formData, {
+      const res = await api.post('/users/avatar', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setUser(res.data);
+      setUser(res.data.user || res.data);
       toast.success('Avatar updated successfully');
     } catch (_error: any) {
       toast.error(_error.response?.data?.message || 'Failed to upload avatar');
@@ -67,15 +67,15 @@ const Profile: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl border border-gray-100 dark:border-gray-700/50">
         <div className="flex flex-col items-center mb-10">
           <div className="relative group">
-            {user?.avatarUrl ? (
+            {user?.avatar_url ? (
               <img
-                src={user.avatarUrl}
+                src={user.avatar_url}
                 alt="Avatar"
                 className={`w-32 h-32 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow-xl transition-all ${uploading ? 'opacity-50 grayscale' : ''}`}
               />
             ) : (
               <div className={`w-32 h-32 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-4xl font-black text-white border-4 border-white dark:border-gray-700 shadow-xl ${uploading ? 'opacity-50' : ''}`}>
-                {user?.displayName?.charAt(0).toUpperCase()}
+                {user?.name?.charAt(0).toUpperCase()}
               </div>
             )}
 

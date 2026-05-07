@@ -1,8 +1,8 @@
 # BẢN TỰ ĐÁNH GIÁ DỰ ÁN (SELF-ASSESSMENT RUBRIC)
 
-**Sinh viên:** [ĐIỀN TÊN TẠI ĐÂY]  
-**MSSV:** [ĐIỀN MSSV TẠI ĐÂY]  
-**Deployment URL:** [ĐIỀN URL TẠI ĐÂY]  
+**Sinh viên:** Trương Minh Thành 
+**MSSV:** 524H0032
+**Deployment URL:** https://note-management-app.onrender.com/ 
 
 Dưới đây là bảng tự đánh giá mức độ hoàn thành của 28 tính năng theo yêu cầu đồ án Note Management Application.
 
