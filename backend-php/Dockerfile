@@ -33,6 +33,6 @@ COPY --chown=www-data:www-data . /var/www
 # Change current user to www-data
 USER www-data
 
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]
+# Expose port and start Laravel server
+EXPOSE 8000
+CMD php artisan serve --host=0.0.0.0 --port=$PORT
