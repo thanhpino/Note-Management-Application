@@ -12,7 +12,11 @@ const MainLayout: React.FC = () => {
   const navigate = useNavigate();
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-500">Loading workspace...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
   }
 
   if (!user) {
@@ -27,10 +31,10 @@ const MainLayout: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
-      
+
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
@@ -53,26 +57,25 @@ const MainLayout: React.FC = () => {
 
         <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
           {navLinks.map(item => (
-             <Link 
+            <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                location.pathname === item.path 
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-300/50 dark:shadow-none font-medium' 
-                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white'
-              }`}
-             >
-               {item.icon} {item.name}
-             </Link>
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${location.pathname === item.path
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-300/50 dark:shadow-none font-medium'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white'
+                }`}
+            >
+              {item.icon} {item.name}
+            </Link>
           ))}
-          
+
           <div className="flex-1 pb-2">
             <LabelManager activeLabelId={new URLSearchParams(location.search).get('label')} onSelectLabel={(id) => {
-               if (id) {
-                 navigate(`/?label=${id}`);
-               } else {
-                 navigate(`/`);
-               }
+              if (id) {
+                navigate(`/?label=${id}`);
+              } else {
+                navigate(`/`);
+              }
             }} />
           </div>
         </nav>
@@ -82,7 +85,7 @@ const MainLayout: React.FC = () => {
             {user?.avatarUrl ? (
               <img src={user.avatarUrl} alt={user?.displayName || 'User'} className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all" />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-500 text-white flex items-center justify-center font-bold text-lg shadow-inner">
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary to-purple-500 text-white flex items-center justify-center font-bold text-lg shadow-inner">
                 {(user?.displayName || 'U').charAt(0).toUpperCase()}
               </div>
             )}
@@ -90,13 +93,13 @@ const MainLayout: React.FC = () => {
               <p className="text-sm font-bold truncate dark:text-white group-hover:text-primary transition-colors">{user?.displayName || 'User'}</p>
               <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
             </div>
-            <button 
+            <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 logout();
-              }} 
-              className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-lg transition-colors" 
+              }}
+              className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-lg transition-colors"
               title="Sign Out"
             >
               <LogOut size={18} />
@@ -107,21 +110,26 @@ const MainLayout: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden min-w-0 bg-gray-50/50 dark:bg-gray-900/50">
-        {user && !user.isVerified && (
+        {user && !user.is_verified && (
           <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-6 py-2 text-sm flex items-center justify-center gap-3 shadow-sm border-b border-amber-200 dark:border-amber-800">
             <span>Please check your email ({user?.email}) to activate your account.</span>
-            <button 
+            <button
               onClick={async () => {
                 try {
                   const api = (await import('../services/api')).default;
                   const { toast } = await import('react-toastify');
                   await api.post('/auth/resend-activation');
                   toast.success('Activation email resent! Check your inbox.');
-                } catch(_e) {
+                } catch (error: any) {
                   const { toast } = await import('react-toastify');
-                  toast.error('Failed to resend email, try again later.');
+                  if (error.response?.status === 400) {
+                    toast.info('Account is already verified.');
+                    const { fetchProfile } = (await import('../context/AuthContext')).useAuth?.() || {};
+                    fetchProfile?.();
+                  } else {
+                    toast.error('Failed to resend email, try again later.');
+                  }
                 }
-
               }}
               className="bg-amber-500 text-white px-3 py-1 rounded-md hover:bg-amber-600 transition-colors font-bold text-xs shadow-sm">
               Resend Email
@@ -137,9 +145,9 @@ const MainLayout: React.FC = () => {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                 <Search size={18} />
               </div>
-              <input 
-                type="text" 
-                placeholder="Search notes..." 
+              <input
+                type="text"
+                placeholder="Search notes..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700/50 border-none focus:ring-2 focus:ring-primary text-sm outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"

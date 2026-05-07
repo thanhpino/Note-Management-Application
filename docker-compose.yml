@@ -1,33 +1,64 @@
-version: '3.8'
 services:
-  backend:
-    build: ./backend
-    container_name: notes_backend
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: notes-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-notes_app}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
     ports:
-      - "5000:5000"
-    env_file:
-      - ./backend/.env
+      - "3306:3306"
     volumes:
-      - ./backend:/app
-      - /app/node_modules
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
+      - db_data:/var/lib/mysql
 
-  frontend:
-    build: 
-      context: ./frontend
-      args:
-        VITE_API_BASE_URL: http://localhost:5000/api
-        VITE_SOCKET_URL: http://localhost:5000
-    container_name: notes_frontend
+  # Laravel Backend
+  backend:
+    build:
+      context: ./backend-php
+      dockerfile: Dockerfile
+    container_name: notes-backend
+    restart: always
+    depends_on:
+      - mysql
     ports:
-      - "3000:80"
+      - "8000:8000"
+    environment:
+      DB_HOST: mysql
+      DB_DATABASE: ${DB_DATABASE:-notes_app}
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-password}
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./backend-php:/var/www/html
+
+  # Laravel Reverb (Real-time)
+  reverb:
+    build:
+      context: ./backend-php
+      dockerfile: Dockerfile
+    container_name: notes-reverb
+    restart: always
     depends_on:
       - backend
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: mysql
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: notes-frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8000/api
+      VITE_REVERB_HOST: localhost
+
+volumes:
+  db_data:

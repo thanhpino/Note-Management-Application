@@ -74,7 +74,7 @@ const Profile: React.FC = () => {
                 className={`w-32 h-32 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow-xl transition-all ${uploading ? 'opacity-50 grayscale' : ''}`}
               />
             ) : (
-              <div className={`w-32 h-32 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-4xl font-black text-white border-4 border-white dark:border-gray-700 shadow-xl ${uploading ? 'opacity-50' : ''}`}>
+              <div className={`w-32 h-32 rounded-full bg-linear-to-br from-primary to-purple-500 flex items-center justify-center text-4xl font-black text-white border-4 border-white dark:border-gray-700 shadow-xl ${uploading ? 'opacity-50' : ''}`}>
                 {user?.name?.charAt(0).toUpperCase()}
               </div>
             )}
@@ -104,7 +104,7 @@ const Profile: React.FC = () => {
           <p className="text-gray-500 text-sm">{user?.email}</p>
 
           <div className="mt-4 flex items-center gap-2">
-            {user?.isVerified ? (
+            {(user?.is_verified || user?.isActivated) ? (
               <span className="flex items-center gap-1 text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-3 py-1 rounded-full border border-green-200 dark:border-green-800">
                 <CheckCircle size={14} /> Account Verified
               </span>

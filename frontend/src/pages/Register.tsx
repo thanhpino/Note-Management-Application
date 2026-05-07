@@ -23,13 +23,12 @@ const Register: React.FC = () => {
 
     setLoading(true);
     try {
-      const res = await api.post('/auth/register', { 
-        email: email.toLowerCase().trim(), 
-        displayName, 
-        password, 
-        confirmPassword 
+      const res = await api.post('/auth/register', {
+        email: email.toLowerCase().trim(),
+        name: displayName,
+        password
       });
-      login(res.data.token, res.data);
+      login(res.data.token);
       toast.success(res.data.message || 'Account created!');
       navigate('/');
     } catch (error: any) {
@@ -40,7 +39,7 @@ const Register: React.FC = () => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -50,17 +49,17 @@ const Register: React.FC = () => {
         <h2 className="text-4xl font-extrabold bg-clip-text text-transparent bg-linear-to-r from-primary to-purple-500 mb-2">Create Account</h2>
         <p className="text-gray-500 dark:text-gray-400">Join us and start organizing your thoughts</p>
       </div>
-      
+
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-4">
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
               <User size={20} />
             </div>
-            <input 
-              type="text" 
-              placeholder="Display Name" 
-              className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300" 
+            <input
+              type="text"
+              placeholder="Display Name"
+              className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300"
               value={displayName}
               onChange={e => setDisplayName(e.target.value)}
             />
@@ -70,23 +69,23 @@ const Register: React.FC = () => {
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
               <Mail size={20} />
             </div>
-            <input 
-              type="email" 
-              placeholder="Email address" 
-              className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300" 
+            <input
+              type="email"
+              placeholder="Email address"
+              className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300"
               value={email}
               onChange={e => setEmail(e.target.value)}
             />
           </div>
-          
+
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
               <Lock size={20} />
             </div>
-            <input 
-              type="password" 
-              placeholder="Password" 
-              className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300" 
+            <input
+              type="password"
+              placeholder="Password"
+              className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300"
               value={password}
               onChange={e => setPassword(e.target.value)}
             />
@@ -96,17 +95,17 @@ const Register: React.FC = () => {
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
               <Lock size={20} />
             </div>
-            <input 
-              type="password" 
-              placeholder="Confirm Password" 
-              className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300" 
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
             />
           </div>
         </div>
 
-        <button 
+        <button
           disabled={loading}
           className="w-full mt-2 flex items-center justify-center gap-2 bg-linear-to-r from-primary to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-200 dark:shadow-none hover:shadow-xl hover:scale-[1.02] disabled:opacity-70 disabled:hover:scale-100"
         >
@@ -117,7 +116,7 @@ const Register: React.FC = () => {
           )}
         </button>
       </form>
-      
+
       <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
         Already have an account?{' '}
         <Link to="/login" className="font-bold text-primary hover:text-indigo-500 transition-colors">

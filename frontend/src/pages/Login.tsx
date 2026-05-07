@@ -25,7 +25,7 @@ const Login: React.FC = () => {
         email: email.toLowerCase().trim(), 
         password 
       });
-      login(res.data.token, res.data);
+      await login(res.data.token);
       toast.success('Welcome back!');
       navigate('/');
     } catch (error: any) {

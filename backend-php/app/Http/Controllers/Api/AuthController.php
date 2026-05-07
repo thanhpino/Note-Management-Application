@@ -30,17 +30,18 @@ class AuthController extends Controller
             'is_verified' => false,
         ]);
 
-        // Link kích hoạt gửi về Frontend (Port 5173)
-        $activationUrl = "http://localhost:5173/activate/{$activationToken}";
+        // Activation link sent to Frontend (Port 5173)
+        $activationUrl = config('app.frontend_url') . "/activate/{$activationToken}";
         
         try {
             Mail::send([], [], function ($message) use ($user, $activationUrl) {
                 $message->to($user->email)
                     ->subject('Activate your Notes Account')
-                    ->html("<h1>Welcome {$user->name}!</h1><p>Please click the link below to activate your account:</p><a href='{$activationUrl}'>Activate Account</a>");
+                    ->html("<h1>Welcome {$user->name}!</h1><p>Please click the link below to activate your account:</p><a href='{$activationUrl}' style='display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px;'>Activate Account</a><p>Or copy this link: {$activationUrl}</p>");
             });
         } catch (\Exception $e) {
-            \Log::error("Mail Error: " . $e->getMessage());
+            \Log::error("Mail Error in Register: " . $e->getMessage());
+            return response()->json(['message' => 'User registered but email failed. Please check your SMTP settings.'], 201);
         }
 
         return response()->json(['message' => 'User registered. Please check your email to activate account.'], 201);
@@ -109,13 +110,21 @@ class AuthController extends Controller
         ]);
 
         try {
-            Mail::send([], [], function ($message) use ($user, $otp) {
-                $message->to($user->email)
-                    ->subject('Password Reset OTP')
-                    ->html("Your OTP for password reset is: <b>{$otp}</b>. It will expire in 15 minutes.");
-            });
+            Mail::raw(
+                "<h1>Password Reset Request</h1>" .
+                "<p>Hello {$user->name},</p>" .
+                "<p>Your OTP for password reset is:</p>" .
+                "<h2 style='background-color: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 24px; font-weight: bold; letter-spacing: 2px;'>{$otp}</h2>" .
+                "<p><strong>This OTP will expire in 15 minutes.</strong></p>" .
+                "<p style='color: #666; font-size: 12px; margin-top: 20px;'>If you did not request a password reset, please ignore this email.</p>",
+                function ($message) use ($user) {
+                    $message->to($user->email)
+                        ->subject('Password Reset OTP - Expires in 15 minutes');
+                }
+            );
         } catch (\Exception $e) {
-             \Log::error("Mail Error: " . $e->getMessage());
+             \Log::error("Mail Error in ForgotPassword: " . $e->getMessage());
+             return response()->json(['message' => 'Failed to send OTP. Please check your SMTP settings.'], 500);
         }
 
         return response()->json(['message' => 'OTP sent to your email']);
@@ -145,8 +154,11 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email',
             'otp' => 'required',
-            'password' => 'required|min:6',
+            'password' => 'required_without:newPassword',
+            'newPassword' => 'required_without:password',
         ]);
+
+        $password = $request->password ?? $request->newPassword;
 
         $user = User::where('email', $request->email)
                     ->where('reset_otp', $request->otp)
@@ -158,7 +170,7 @@ class AuthController extends Controller
         }
 
         $user->update([
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($password),
             'reset_otp' => null,
             'reset_otp_expires_at' => null,
         ]);
@@ -182,14 +194,19 @@ class AuthController extends Controller
         $activationToken = Str::random(64);
         $user->update(['activation_token' => $activationToken]);
 
-        $activationUrl = "http://localhost:5173/activate/{$activationToken}";
+        $activationUrl = config('app.frontend_url') . "/activate/{$activationToken}";
 
         try {
-            Mail::send([], [], function ($message) use ($user, $activationUrl) {
-                $message->to($user->email)
-                    ->subject('Activate your Notes Account')
-                    ->html("<h1>Welcome!</h1><p>Please click the link below to activate your account:</p><a href='{$activationUrl}'>Activate Account</a>");
-            });
+            Mail::raw(
+                "<h1>Welcome!</h1>" .
+                "<p>Please click the link below to activate your account:</p>" .
+                "<a href='{$activationUrl}' style='display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;'>Activate Account</a>" .
+                "<p style='margin-top: 20px; color: #666; font-size: 12px;'>Or copy this link: {$activationUrl}</p>",
+                function ($message) use ($user) {
+                    $message->to($user->email)
+                        ->subject('Activate your Notes Account');
+                }
+            );
         } catch (\Exception $e) {
             \Log::error("Resend Activation Mail Failed: " . $e->getMessage());
             return response()->json(['message' => 'Failed to send email. Please check your SMTP settings.'], 500);

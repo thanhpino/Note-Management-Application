@@ -40,17 +40,19 @@ Route::middleware('auth:sanctum')->group(function () {
     // Pin - Hỗ trợ cả PUT và POST cho chắc
     Route::match(['put', 'post'], '/notes/{id}/pin', [NoteController::class, 'togglePin']);
 
-    // Lock/Unlock - Hỗ trợ POST/PUT/DELETE theo yêu cầu của Frontend
-    Route::match(['post', 'put'], '/notes/{id}/lock', [NoteController::class, 'lockNote']);
-    Route::delete('/notes/{id}/lock', [NoteController::class, 'removePassword']);
-    Route::post('/notes/{id}/unlock', [NoteController::class, 'unlockNote']);
+    // Lock/Unlock
+    Route::match(['post', 'put'], '/notes/{id}/lock', [NoteController::class, 'lock']);
+    Route::delete('/notes/{id}/lock', [NoteController::class, 'unlock']);
+    Route::post('/notes/{id}/unlock', [NoteController::class, 'verifyPassword']);
     Route::post('/notes/{id}/verify-password', [NoteController::class, 'verifyPassword']);
 
-    // Share - Hỗ trợ cả /share và /shares
-    Route::post('/notes/{id}/share', [NoteController::class, 'share']);
+    // Share
+    Route::get('/notes/{id}/shares', [NoteController::class, 'getShares']);
     Route::post('/notes/{id}/shares', [NoteController::class, 'share']);
+    Route::delete('/notes/{id}/shares/{userId}', [NoteController::class, 'revokeShare']);
 
     // Images
+    Route::post('/notes/{id}/copy', [NoteController::class, 'copy']);
     Route::post('/notes/{id}/images', [NoteController::class, 'uploadImages']);
     Route::delete('/notes/{id}/images', [NoteController::class, 'removeImage']);
 
@@ -59,5 +61,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/users/profile', [UserController::class, 'updateProfile']);
     Route::put('/users/profile/preferences', [UserController::class, 'updatePreferences']);
     Route::match(['put', 'post'], '/users/avatar', [UserController::class, 'updateAvatar']);
+    Route::put('/users/change-password', [UserController::class, 'changePassword']); // Thêm dòng này
     Route::put('/users/clear-notification', [UserController::class, 'clearNotification']);
 });

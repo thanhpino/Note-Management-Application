@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Share2, Trash2, Unlock, Lock, Loader2, Image as ImageIcon, Pin, X, Hash, Tag } from 'lucide-react';
+import { ArrowLeft, Share2, Trash2, Unlock, Lock, Loader2, Image as ImageIcon, Pin, X, Hash, Tag, FileText } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../services/api';
 import echo from '../services/echo';
@@ -108,14 +108,51 @@ const NoteEditor: React.FC = () => {
           toast.error('Note not found');
           navigate('/');
         });
-    } else {
-      setIsNoteReady(true);
     }
-
-    return () => {
-      // Cleanup for Reverb is handled in the other useEffect
-    };
   }, [id, navigate]);
+
+  const [activeUsers, setActiveUsers] = useState<any[]>([]);
+
+  // Real-time Collaboration & Presence
+  useEffect(() => {
+    if (id && id !== 'new') {
+      const channel = echo.join(`note.${id}`);
+
+      channel
+        .here((users: any[]) => {
+          setActiveUsers(users);
+        })
+        .joining((user: any) => {
+          setActiveUsers(prev => {
+            if (prev.find(u => u.id === user.id)) return prev;
+            toast.info(`${user.name} joined editing`);
+            return [...prev, user];
+          });
+        })
+        .leaving((user: any) => {
+          setActiveUsers(prev => prev.filter(u => u.id !== user.id));
+        })
+        .listen('NoteUpdated', (e: any) => {
+          // Only update if the current user is not typing (saving is false)
+          // This is crucial to prevent losing cursor position while typing
+          if (!saving) {
+            if (e.title !== undefined) setTitle(e.title);
+            if (e.content !== undefined) setContent(e.content);
+          }
+          // Other fields can be updated regardless
+          if (e.color !== undefined) setColor(e.color);
+          if (e.images !== undefined) setImages(e.images);
+          // Update labels from backend response
+          if (e.labels !== undefined) {
+              setNoteLabels(e.labels);
+          }
+        });
+
+      return () => {
+        echo.leave(`note.${id}`);
+      };
+    }
+  }, [id]);
 
 
   useEffect(() => {
@@ -161,13 +198,32 @@ const NoteEditor: React.FC = () => {
   };
 
   const handleTogglePin = async () => {
-    if (!canEdit) return;
+    if (currentUserPermission === 'view') return;
     try {
       await api.put(`/notes/${id}/pin`);
       setIsPinned(!isPinned);
       toast.success(isPinned ? 'Note unpinned' : 'Note pinned');
     } catch {
       toast.error('Failed to change pin status');
+    }
+  };
+
+  const toggleLabel = async (labelId: string) => {
+    if (currentUserPermission === 'view') return;
+    const newSelected = selectedLabels.includes(labelId)
+      ? selectedLabels.filter(id => id !== labelId)
+      : [...selectedLabels, labelId];
+    
+    setSelectedLabels(newSelected);
+    
+    try {
+      const res = await api.put(`/notes/${id}`, { labels: newSelected });
+      // Update local note labels from backend response
+      if (res.data.labels) {
+          setNoteLabels(res.data.labels);
+      }
+    } catch (_e) {
+      toast.error('Failed to update labels');
     }
   };
 
@@ -199,6 +255,16 @@ const NoteEditor: React.FC = () => {
       toast.error('Failed to upload image');
     } finally {
       setUploadingImage(false);
+    }
+  };
+
+  const handleCopyToMyNotes = async () => {
+    try {
+      const res = await api.post(`/notes/${id}/copy`);
+      toast.success('Note copied to your personal dashboard!');
+      navigate(`/note/${res.data._id || res.data.id}`);
+    } catch {
+      toast.error('Failed to copy note');
     }
   };
 
@@ -273,9 +339,33 @@ const NoteEditor: React.FC = () => {
           )}
         </div>
         <div className="flex items-center gap-3">
+          {/* Active Users Avatars */}
+          <div className="flex -space-x-2 mr-4 overflow-hidden">
+            {activeUsers.map((u, index) => (
+              <div key={`${u.id}-${index}`} className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-gray-800" title={u.name}>
+                {u.avatar_url ? (
+                  <img src={u.avatar_url} className="h-full w-full rounded-full object-cover" alt={u.name} />
+                ) : (
+                  <div className="h-full w-full rounded-full bg-primary flex items-center justify-center text-[10px] text-white font-bold">
+                    {u.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
           {canEdit && (
             <button onClick={handleTogglePin} className={`p-2 rounded-xl transition-all ${isPinned ? 'text-amber-500 bg-amber-50' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'}`} title={isPinned ? "Unpin" : "Pin"}>
               <Pin size={20} className={isPinned ? 'fill-current' : ''} />
+            </button>
+          )}
+          {!isOwner && (
+            <button
+              onClick={handleCopyToMyNotes}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-xl transition-all font-bold text-sm shadow-sm"
+              title="Save a copy to your notes"
+            >
+              <FileText size={18} /> Save to My Notes
             </button>
           )}
           {isOwner && (
@@ -307,7 +397,7 @@ const NoteEditor: React.FC = () => {
         {selectedLabels.length > 0 && (
           <div className="flex flex-wrap gap-2 px-1">
             {selectedLabels.map(id => {
-              const label = availableLabels.find(l => l._id === id) || noteLabels.find(l => l._id === id);
+              const label = availableLabels.find(l => l.id === id) || noteLabels.find(l => l.id === id);
               if (!label) return null;
               return (
                 <div key={id} className="flex items-center gap-1.5 bg-primary/10 dark:bg-primary/20 text-primary dark:text-indigo-300 px-3 py-1 rounded-full border border-primary/20 group/chip hover:bg-primary/20 transition-all">
@@ -315,7 +405,7 @@ const NoteEditor: React.FC = () => {
                   <span className="text-sm font-medium">{label.name}</span>
                   {canEdit && (
                     <button
-                      onClick={() => setSelectedLabels(selectedLabels.filter(sid => sid !== id))}
+                      onClick={() => toggleLabel(id)}
                       className="hover:text-red-500 transition-colors p-0.5 rounded-full hover:bg-white/50 dark:hover:bg-gray-800/50"
                     >
                       <X size={14} />
@@ -331,6 +421,7 @@ const NoteEditor: React.FC = () => {
           placeholder="Empty note"
           value={content}
           onChange={(e) => setContent(e.target.value)}
+          readOnly={!canEdit}
           className="w-full flex-1 bg-transparent border-none outline-none resize-none text-lg text-gray-700 dark:text-gray-200 placeholder-gray-400/60 leading-relaxed scrollbar-hide"
         />
 
@@ -439,15 +530,12 @@ const NoteEditor: React.FC = () => {
                           <p className="text-xs px-2 py-4 text-center text-gray-400 italic">No labels created yet</p>
                         ) : (
                           availableLabels.map(lbl => (
-                            <label key={lbl._id} className="flex items-center gap-3 px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl cursor-pointer transition-all group/label">
+                            <label key={lbl.id} className="flex items-center gap-3 px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl cursor-pointer transition-all group/label">
                               <input
                                 type="checkbox"
                                 className="rounded-md text-primary focus:ring-primary w-4 h-4 bg-gray-100 border-gray-300 dark:bg-gray-700 dark:border-gray-600 transition-all border-2 group-hover/label:border-primary"
-                                checked={selectedLabels.includes(lbl._id)}
-                                onChange={(e) => {
-                                  if (e.target.checked) setSelectedLabels([...selectedLabels, lbl._id]);
-                                  else setSelectedLabels(selectedLabels.filter(id => id !== lbl._id));
-                                }}
+                                checked={selectedLabels.includes(lbl.id)}
+                                onChange={() => toggleLabel(lbl.id)}
                               />
                               <span className="text-sm font-medium text-gray-700 dark:text-gray-300 line-clamp-1">{lbl.name}</span>
                             </label>

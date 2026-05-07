@@ -19,6 +19,7 @@ class UserController extends Controller
             'email' => $request->user()->email,
             'avatar_url' => $request->user()->avatar_url,
             'avatarUrl' => $request->user()->avatar_url,
+            'is_verified' => (bool)$request->user()->is_verified,
             'isActivated' => (bool)$request->user()->is_verified,
             'preferences' => $request->user()->preferences ?? ['darkMode' => false]
         ]);
@@ -35,7 +36,21 @@ class UserController extends Controller
         if ($newName) {
             $user->update(['name' => $newName]);
         }
-        return response()->json($this->profile($request)->getData());
+        
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => [
+                'id' => $user->id,
+                '_id' => (string)$user->id,
+                'name' => $user->name ?? 'User',
+                'displayName' => $user->name ?? 'User',
+                'email' => $user->email,
+                'avatar_url' => $user->avatar_url,
+                'avatarUrl' => $user->avatar_url,
+                'isActivated' => (bool)$user->is_verified,
+                'preferences' => $user->preferences ?? ['darkMode' => false]
+            ]
+        ]);
     }
 
     public function updateAvatar(Request $request)
@@ -48,13 +63,33 @@ class UserController extends Controller
         
         if ($request->hasFile('avatar')) {
             $file = $request->file('avatar');
-            $upload = cloudinary()->upload($file->getRealPath());
-            $user->update(['avatar_url' => $upload->getSecurePath()]);
+            try {
+                $upload = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload($file->getRealPath());
+                $url = $upload->getSecurePath();
+                $user->update(['avatar_url' => $url]);
+            } catch (\Exception $e) {
+                \Log::error("Cloudinary Avatar Upload Error: " . $e->getMessage());
+                return response()->json([
+                    'message' => 'Failed to upload avatar. Check Cloudinary settings.',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
         }
 
         return response()->json([
             'message' => 'Avatar updated successfully',
-            'avatar_url' => $user->avatar_url
+            'avatar_url' => $user->avatar_url,
+            'user' => [
+                'id' => $user->id,
+                '_id' => (string)$user->id,
+                'name' => $user->name ?? 'User',
+                'displayName' => $user->name ?? 'User',
+                'email' => $user->email,
+                'avatar_url' => $user->avatar_url,
+                'avatarUrl' => $user->avatar_url,
+                'isActivated' => (bool)$user->is_verified,
+                'preferences' => $user->preferences ?? ['darkMode' => false]
+            ]
         ]);
     }
 
@@ -65,5 +100,30 @@ class UserController extends Controller
             'preferences' => $request->preferences
         ]);
         return response()->json(['message' => 'Preferences updated']);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'currentPassword' => 'required',
+            'newPassword' => 'required|min:6',
+        ]);
+
+        $user = $request->user();
+
+        if (!\Illuminate\Support\Facades\Hash::check($request->currentPassword, $user->password)) {
+            return response()->json(['message' => 'Current password is incorrect'], 422);
+        }
+
+        $user->update([
+            'password' => \Illuminate\Support\Facades\Hash::make($request->newPassword)
+        ]);
+
+        return response()->json(['message' => 'Password changed successfully']);
+    }
+
+    public function clearNotification(Request $request)
+    {
+        return response()->json(['message' => 'Notifications cleared']);
     }
 }

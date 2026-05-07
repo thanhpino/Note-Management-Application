@@ -8,18 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Quan hệ n-n giữa Note và Label
         Schema::create('note_label', function (Blueprint $table) {
             $table->id();
             $table->foreignId('note_id')->constrained()->onDelete('cascade');
             $table->foreignId('label_id')->constrained()->onDelete('cascade');
         });
 
-        // Lưu thông tin chia sẻ ghi chú
         Schema::create('note_shares', function (Blueprint $table) {
             $table->id();
             $table->foreignId('note_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Người được chia sẻ
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->enum('permission', ['view', 'edit'])->default('view');
             $table->timestamp('shared_at')->useCurrent();
             $table->timestamps();

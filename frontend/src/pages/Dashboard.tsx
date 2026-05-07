@@ -35,16 +35,31 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // Load cache immediately on mount for better UX
+  useEffect(() => {
+    const cached = localStorage.getItem('notes_cache');
+    if (cached) {
+      setNotes(JSON.parse(cached));
+      setLoading(false); // Show cached data while fetching fresh data
+    }
+  }, []);
+
   const fetchNotes = async () => {
-    setLoading(true);
+    setLoading(notes.length === 0); // Only show loading if no cache
     try {
       const searchParams = new URLSearchParams(location.search);
       const labelId = searchParams.get('label');
       const url = labelId ? `/notes?label=${labelId}` : '/notes';
       const res = await api.get(url);
       setNotes(res.data);
+      // Update cache
+      localStorage.setItem('notes_cache', JSON.stringify(res.data));
     } catch {
-      toast.error('Failed to fetch notes');
+      if (localStorage.getItem('notes_cache')) {
+        toast.info('Working offline mode');
+      } else {
+        toast.error('Failed to fetch notes');
+      }
     } finally {
       setLoading(false);
     }
@@ -126,9 +141,10 @@ const Dashboard: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>
+        <div className={viewMode === 'grid'
+          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-all duration-500 ease-in-out"
+          : "flex flex-col gap-4 transition-all duration-500 ease-in-out"}>
           {filteredNotes.map(note => {
-            const isLocked = !!note.notePasswordHash;
             const firstImage = note.images && note.images.length > 0 ? note.images[0] : null;
 
             return (
@@ -136,8 +152,8 @@ const Dashboard: React.FC = () => {
                 key={note.id || note._id}
                 onClick={() => navigate(`/note/${note.id || note._id}`)}
                 className={`group relative bg-white dark:bg-gray-800 rounded-3xl shadow-sm hover:shadow-xl border border-gray-100 dark:border-gray-700/50 transition-all duration-300 cursor-pointer flex ${viewMode === 'grid' ? 'flex-col h-72 hover:-translate-y-1.5' : 'flex-row items-center gap-4 p-4 hover:translate-x-1'} overflow-hidden`}
-                style={{ 
-                  backgroundColor: note.color && !document.documentElement.classList.contains('dark') ? note.color : undefined 
+                style={{
+                  backgroundColor: note.color && !document.documentElement.classList.contains('dark') ? note.color : undefined
                 }}
               >
                 {/* Image Preview - Grid Mode */}
@@ -156,38 +172,35 @@ const Dashboard: React.FC = () => {
                   </div>
                 )}
 
-                <div className={`flex flex-col flex-1 ${viewMode === 'grid' ? 'p-6' : 'py-1'}`}>
-                  <h3 className={`text-xl font-bold ${note.color ? 'text-gray-900' : 'text-gray-800 dark:text-white'} mb-2 line-clamp-1 leading-tight flex items-center gap-2`}>
-                    {note.isPinned && <span title="Pinned">📌</span>}
-                    {isLocked && <span title="Password Protected">🔒</span>}
-                    {note.sharedWith && note.sharedWith.length > 0 && <span title="Shared">👥</span>}
-                    {note.title}
-                  </h3>
+                <div className={`flex flex-col flex-1 ${viewMode === 'grid' ? 'p-0' : 'py-1'}`}>
+                  <div className="px-6 py-4 flex-1">
+                    <h3 className={`text-xl font-bold mb-3 line-clamp-2 leading-tight ${note.color ? 'text-gray-900' : 'text-gray-800 dark:text-white'}`}>
+                      {note.is_pinned && <span title="Pinned" className="mr-2">📌</span>}
+                      {note.is_password_protected && <Lock size={18} className="inline mr-2 text-emerald-500" />}
+                      {note.title || 'Untitled Note'}
+                    </h3>
 
-                  {/* Label Chips */}
-                  {note.labels && note.labels.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {note.labels.map((label: any) => (
-                        <span key={label.id || label._id} className="text-[10px] font-bold text-gray-400 dark:text-gray-500 bg-gray-100/50 dark:bg-gray-700/30 px-2 py-0.5 rounded-md uppercase tracking-tight border border-gray-100 dark:border-gray-700/50">
-                          #{label.name}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                    {/* Image Preview */}
+                    {note.images && note.images.length > 0 && !note.is_password_protected && (
+                      <div className="mb-4 rounded-xl overflow-hidden h-32 border border-black/5 dark:border-white/5">
+                        <img src={note.images[0]} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )}
 
-                  {isLocked ? (
-                    <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500 italic text-sm mt-2">
-                       <Lock size={14} /> Content hidden for your privacy
-                    </div>
-                  ) : (
-                    <p className={`${note.color ? 'text-gray-800' : 'text-gray-600 dark:text-gray-400'} text-sm leading-relaxed ${viewMode === 'grid' ? 'line-clamp-3' : 'line-clamp-1'}`}>
-                      {note.content || <span className="opacity-40 italic">Empty note</span>}
-                    </p>
-                  )}
-                </div>
+                    {note.is_password_protected ? (
+                      <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500 text-sm italic py-2">
+                        <Lock size={14} /> Content hidden for your privacy
+                      </div>
+                    ) : (
+                      <p className={`${note.color ? 'text-gray-800' : 'text-gray-600 dark:text-gray-400'} text-sm leading-relaxed ${viewMode === 'grid' ? 'line-clamp-3' : 'line-clamp-1'}`}>
+                        {note.content || <span className="opacity-40 italic">Empty note</span>}
+                      </p>
+                    )}
+                  </div>
 
-                <div className={`${viewMode === 'grid' ? 'px-6 pb-4 flex justify-between items-center shrink-0 mt-auto' : 'text-right min-w-[100px] pr-4'}`}>
-                  <span className={`text-xs font-medium ${note.color ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`}>{new Date(note.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  <div className={`${viewMode === 'grid' ? 'px-6 pb-4 flex justify-between items-center shrink-0 mt-auto' : 'text-right min-w-[100px] pr-4'}`}>
+                    <span className={`text-xs font-medium ${note.color ? 'text-gray-700' : 'text-gray-400 dark:text-gray-500'}`}>{new Date(note.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  </div>
                 </div>
               </div>
             );

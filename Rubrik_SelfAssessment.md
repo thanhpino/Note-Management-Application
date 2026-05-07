@@ -1,41 +1,41 @@
-# BẢN TỰ ĐÁNH GIÁ DỰ ÁN (SELF-ASSESSMENT RUBRIC)
+# PROJECT SELF-ASSESSMENT RUBRIC
 
-**Sinh viên:** Trương Minh Thành 
-**MSSV:** 524H0032
+**Student:** Truong Minh Thanh  
+**ID:** 524H0032  
 **Deployment URL:** https://note-management-app.onrender.com/ 
 
-Dưới đây là bảng tự đánh giá mức độ hoàn thành của 28 tính năng theo yêu cầu đồ án Note Management Application.
+This document outlines the self-assessment for the 28 required features of the Note Management Application.
 
-| STT | Tiêu chí (Feature) | Trạng thái | Ghi chú kỹ thuật |
+| No. | Criterion (Feature) | Status | Technical Notes |
 |:---:|:---|:---:|:---|
-| 1 | User registration | ✅ Hoàn thành | Hỗ trợ Validation, mã hóa mật khẩu bcrypt, tự động đăng nhập sau khi tạo. |
-| 2 | Account activation | ✅ Hoàn thành | Gửi link kích hoạt qua Email. Banner cảnh báo hiện khi chưa verify. |
-| 3 | User login & logout | ✅ Hoàn thành | JWT Storage (Cookie/Local), Route Guard cho toàn bộ Dashboard. |
-| 4 | Password reset | ✅ Hoàn thành | Gửi OTP qua Email. Luồng bảo mật 2 bước để đặt lại mật khẩu. |
-| 5 | View profile & avatar | ✅ Hoàn thành | Tích hợp Cloudinary để lưu trữ ảnh đại diện thực tế. |
-| 6 | Edit profile & avatar | ✅ Hoàn thành | Cập nhật tên và ảnh đồng bộ ngay lập tức trên UI. |
-| 7 | Change password | ✅ Hoàn thành | Kiểm tra mật khẩu cũ trước khi cho phép thay đổi mật khẩu mới. |
-| 8 | User preferences | ✅ Hoàn thành | Thay đổi Font-size (Editor), Theme (Dark/Light), Note Color (12 màu). |
-| 9 | Display notes list view | ✅ Hoàn thành | Thay đổi linh hoạt giữa giao diện List và Grid mượt mà. |
-| 10 | Display notes grid view | ✅ Hoàn thành | Giao diện Responsive Grid hiện đại với Masonry layout basics. |
-| 11 | Create notes | ✅ Hoàn thành | Tạo ghi chú với tiêu đề, nội dung và các metadata đính kèm. |
-| 12 | Update notes | ✅ Hoàn thành | Tự động đồng bộ nội dung khi chỉnh sửa. |
-| 13 | Delete notes | ✅ Hoàn thành | Có Modal xác nhận xác thực trước khi xóa vĩnh viễn. |
-| 14 | Auto-save notes | ✅ Hoàn thành | Debounce logic (1000ms), hiển thị trạng thái "Saving/Saved" trên header. |
-| 15 | Attach images to notes | ✅ Hoàn thành | Hỗ trợ upload nhiều ảnh cùng lúc lên Cloudinary mảng Array. |
-| 16 | Pin notes to top | ✅ Hoàn thành | Ghim ghi chú quan trọng lên đầu danh sách (Sort by Pinned). |
-| 17 | Search notes | ✅ Hoàn thành | Live Search (Debounce 300ms) tìm kiếm cả Title và Content. |
-| 18 | Label management | ✅ Hoàn thành | CRUD nhãn (Thêm, Xóa, Sửa name) tại Sidebar. |
-| 19 | Filter notes by labels | ✅ Hoàn thành | Lọc ghi chú theo nhãn qua Sidebar và hiển thị Active Label. |
-| 20 | Password protected notes | ✅ Hoàn thành | **Better Approach**: Khóa Note riêng lẻ. Yêu cầu mật khẩu để xem/sửa. |
-| 21 | Shared notes | ✅ Hoàn thành | Chia sẻ qua Email với quyền Read/Edit. Notification realtime. |
-| 22 | Notification | ✅ Hoàn thành | Thông báo chấm đỏ khi có note được chia sẻ từ người khác. |
-| 23 | Shared user list/Revoke | ✅ Hoàn thành | **Better Approach**: Xem danh sách đã share, thu hồi quyền truy cập. |
-| 24 | Real-time collaboration | ✅ Hoàn thành | Websocket (Socket.io) cập nhật nội dung đồng bộ giữa các user. |
-| 25 | UI/UX Rich Aesthetics | ✅ Hoàn thành | Dark mode, Glassmorphism, Skeleton loading, Toast notifications. |
-| 26 | Mobile Responsive | ✅ Hoàn thành | Sidebar gập mở, Bottom menu cho mobile, Layout co giãn chuẩn. |
-| 27 | Offline capabilities | ✅ Hoàn thành | PWA (Service Worker) & IndexedDB (Dexie) đồng bộ khi có mạng. |
-| 28 | Online Deployment | ✅ Hoàn thành | Hỗ trợ Docker Compose hoàn chỉnh cho Production. |
+| 1 | User registration | ✅ Done | Validation, bcrypt hashing, auto-login after creation. |
+| 2 | Account activation | ✅ Done | Activation link via Email. Warning banner for unverified users. |
+| 3 | User login & logout | ✅ Done | JWT-based auth with Route Guards for Dashboard protection. |
+| 4 | Password reset | ✅ Done | OTP via Email. Secure 2-step password reset flow. |
+| 5 | View profile & avatar | ✅ Done | Cloudinary integration for real-world image storage. |
+| 6 | Edit profile & avatar | ✅ Done | Synchronized updates for display name and avatar. |
+| 7 | Change password | ✅ Done | Old password verification before updating to new password. |
+| 8 | User preferences | ✅ Done | Font-size adjustments, Dark/Light mode, Note colors (12 presets). |
+| 9 | Display notes list view | ✅ Done | Seamless toggle between Grid and List layouts. |
+| 10 | Display notes grid view | ✅ Done | Modern Responsive Grid with optimized scaling. |
+| 11 | Create notes | ✅ Done | Comprehensive metadata support (title, content, colors, labels). |
+| 12 | Update notes | ✅ Done | Real-time content synchronization. |
+| 13 | Delete notes | ✅ Done | Permanent deletion with Cloudinary image cleanup. |
+| 14 | Auto-save notes | ✅ Done | Debounce logic (1000ms) with visual saving status. |
+| 15 | Attach images to notes | ✅ Done | Multi-image upload support to Cloudinary arrays. |
+| 16 | Pin notes to top | ✅ Done | "Sort by Pinned" logic ensures important notes stay at top. |
+| 17 | Search notes | ✅ Done | Live Search filtering by both Title and Content. |
+| 18 | Label management | ✅ Done | Full CRUD for labels (Add, Edit, Delete) via Sidebar. |
+| 19 | Filter notes by labels | ✅ Done | Dynamic filtering via Sidebar with active state tracking. |
+| 20 | Attach labels to notes | ✅ Done | Many-to-many relationship management between notes and labels. |
+| 21 | Enable/Disable password | ✅ Done | Toggle-able encryption for sensitive information. |
+| 22 | Password protected notes | ✅ Done | Secure verification modal for viewing/editing locked notes. |
+| 23 | Share and receive notes | ✅ Done | Permission-based sharing (Read/Edit) + Copy to My Notes. |
+| 24 | Collaboration & Real-time | ✅ Done | Laravel Reverb (WebSockets) for presence and instant sync. |
+| 25 | UI and UX | ✅ Done | Premium glassmorphism design with responsive animations. |
+| 26 | Responsive | ✅ Done | Fully optimized for Mobile, Tablet, and Desktop. |
+| 27 | Offline Capabilities | ✅ Done | PWA Manifest + Intelligent LocalStorage caching. |
+| 28 | Online deployment | ✅ Done | Deployed on Render with HTTPS and optimized performance. |
 
 ---
-**Tổng điểm tự đánh giá:** 10/10 (Chứng minh được 100% chức năng qua Video Demo).
+*Self-assessed by Truong Minh Thanh*

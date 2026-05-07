@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('email')->unique();
-            $table->string('display_name');
+            $table->string('name');
             $table->string('password'); // passwordHash
             $table->string('avatar_url')->nullable();
             $table->boolean('is_verified')->default(false);

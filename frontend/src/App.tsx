@@ -20,7 +20,11 @@ import { useEffect } from 'react';
 import AuthLayout from './layouts/AuthLayout';
 import MainLayout from './layouts/MainLayout';
 
+import { useAuth } from './context/AuthContext';
+
 function App() {
+  const { loading } = useAuth();
+
   // Sync themes on load
   useEffect(() => {
     if (localStorage.getItem('theme') === 'dark') {
@@ -31,6 +35,14 @@ function App() {
       document.documentElement.style.fontSize = savedSize;
     }
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <Router>

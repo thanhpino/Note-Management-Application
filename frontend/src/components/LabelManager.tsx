@@ -73,26 +73,26 @@ export const LabelManager = ({ activeLabelId, onSelectLabel }: { activeLabelId?:
            </button>
         </li>
         {labels.map(l => (
-          <li key={l._id} className="relative group">
-            <div className={`w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all text-left ${activeLabelId === l._id ? 'bg-indigo-600 text-white shadow-md font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}`}>
-              <Tag size={16} className={`${activeLabelId === l._id ? 'text-white' : 'text-gray-400'}`} />
-              {editingId === l._id ? (
+          <li key={l.id} className="relative group">
+            <div className={`w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all text-left ${activeLabelId === l.id ? 'bg-indigo-600 text-white shadow-md font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}`}>
+              <Tag size={16} className={`${activeLabelId === l.id ? 'text-white' : 'text-gray-400'}`} />
+              {editingId === l.id ? (
                 <div className="flex items-center flex-1 gap-2">
                   <input 
                     type="text" autoFocus
                     value={editName} onChange={e => setEditName(e.target.value)}
-                    className={`flex-1 bg-white dark:bg-gray-800 border ${activeLabelId === l._id ? 'border-white text-gray-800' : 'border-indigo-500'} text-sm px-2 py-0.5 rounded outline-none`}
-                    onKeyDown={(e) => e.key === 'Enter' && handleUpdate(l._id)}
+                    className={`flex-1 bg-white dark:bg-gray-800 border ${activeLabelId === l.id ? 'border-white text-gray-800' : 'border-indigo-500'} text-sm px-2 py-0.5 rounded outline-none`}
+                    onKeyDown={(e) => e.key === 'Enter' && handleUpdate(l.id)}
                   />
-                  <button onClick={() => handleUpdate(l._id)} className="text-emerald-500"><Check size={14}/></button>
+                  <button onClick={() => handleUpdate(l.id)} className="text-emerald-500"><Check size={14}/></button>
                   <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-red-500"><X size={14}/></button>
                 </div>
               ) : (
                 <div className="flex flex-1 items-center justify-between">
-                  <span className="flex-1 truncate cursor-pointer text-sm" onClick={() => onSelectLabel(l._id)}>{l.name}</span>
+                  <span className="flex-1 truncate cursor-pointer text-sm" onClick={() => onSelectLabel(l.id)}>{l.name}</span>
                   <div className="hidden group-hover:flex items-center gap-2">
-                    <button onClick={() => { setEditingId(l._id); setEditName(l.name); }} className="text-gray-400 hover:text-indigo-500"><Edit2 size={12}/></button>
-                    <button onClick={() => handleDelete(l._id)} className="text-gray-400 hover:text-red-500"><Trash2 size={12}/></button>
+                    <button onClick={() => { setEditingId(l.id); setEditName(l.name); }} className="text-gray-400 hover:text-indigo-500"><Edit2 size={12}/></button>
+                    <button onClick={() => handleDelete(l.id)} className="text-gray-400 hover:text-red-500"><Trash2 size={12}/></button>
                   </div>
                 </div>
               )}

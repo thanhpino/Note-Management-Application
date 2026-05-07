@@ -37,12 +37,12 @@ class User extends Authenticatable
 
     public function notes()
     {
-        return $this->hasMany(Note::class, 'userId');
+        return $this->hasMany(Note::class, 'user_id');
     }
 
     public function labels()
     {
-        return $this->hasMany(Label::class, 'userId');
+        return $this->hasMany(Label::class, 'user_id');
     }
 
     public function sharedNotes()
