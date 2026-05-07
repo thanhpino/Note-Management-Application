@@ -190,7 +190,10 @@ class AuthController extends Controller
                     ->subject('Activate your Notes Account')
                     ->html("<h1>Welcome!</h1><p>Please click the link below to activate your account:</p><a href='{$activationUrl}'>Activate Account</a>");
             });
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+            \Log::error("Resend Activation Mail Failed: " . $e->getMessage());
+            return response()->json(['message' => 'Failed to send email. Please check your SMTP settings.'], 500);
+        }
 
         return response()->json(['message' => 'Activation link resent']);
     }

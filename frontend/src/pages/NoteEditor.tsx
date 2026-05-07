@@ -57,7 +57,7 @@ const NoteEditor: React.FC = () => {
   // Real-time Collaboration with Laravel Reverb
   useEffect(() => {
     if (id && id !== 'new') {
-      const channel = echo.private(`note.${id}`)
+      echo.private(`note.${id}`)
         .listen('.note.updated', (data: any) => {
           const updatedNote = data.note;
           setTitle(updatedNote.title);

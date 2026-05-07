@@ -22,7 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       api.get('/users/profile')
         .then(res => {
           setUser(res.data);
-          initSocket(token);
+          initSocket();
         })
         .catch(() => {
           localStorage.removeItem('token');
@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (token: string, userData: any) => {
     localStorage.setItem('token', token);
     setUser(userData);
-    initSocket(token);
+    initSocket();
   };
 
   const logout = () => {
