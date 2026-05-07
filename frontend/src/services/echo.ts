@@ -10,14 +10,17 @@ declare global {
 
 window.Pusher = Pusher;
 
+const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const backendHost = new URL(backendUrl).hostname;
+
 const echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY || 'notes_key_123',
-    wsHost: window.location.hostname,
-    wsPort: 8080,
-    forceTLS: false,
+    wsHost: backendHost,
+    wsPort: 443,
+    forceTLS: true,
     enabledTransports: ['ws', 'wss'],
-    authEndpoint: 'http://localhost:8000/api/broadcasting/auth',
+    authEndpoint: `${backendUrl}/broadcasting/auth`,
     auth: {
         headers: {
             get Authorization() {
