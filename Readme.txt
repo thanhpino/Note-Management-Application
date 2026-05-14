@@ -12,13 +12,23 @@ DEMO VIDEO: [Link_Video_Demo_Ở_Đây]
 --------------------------------------------------
 1. OVERVIEW
 --------------------------------------------------
-The Intelligent Note Management Application is a modern platform that allows users to create, secure, and collaborate on notes in real-time. Built with Laravel 11 (Backend) and React Vite (Frontend).
+A high-performance Note Management platform featuring real-time collaboration, secure note protection, and offline support.
+Built with Laravel 11 (Backend) and React Vite (Frontend).
 
 --------------------------------------------------
-2. DEPLOYMENT & ACCESS (DOCKER)
+2. OPTIONAL FEATURES (EXTRA POINTS) ✨
 --------------------------------------------------
-The project is containerized using Docker Compose.
-1. Ensure Docker is running.
+Our team has implemented the following advanced features:
+- REAL-TIME COLLABORATION: Using Laravel Reverb (WebSockets) for instant note syncing and presence tracking (see who is online).
+- PROGRESSIVE WEB APP (PWA): Full offline support with Service Workers and LocalStorage caching.
+- SECURE NOTES: Notes can be password-protected with industry-standard hashing.
+- DIRECT CLOUD UPLOAD: Images/Avatars are uploaded directly from Frontend to Cloudinary for maximum speed.
+- BACKGROUND EMAIL QUEUE: Registration and OTP emails are processed asynchronously using Laravel Queue for a seamless UX.
+
+--------------------------------------------------
+3. RUNNING THE PROJECT (DOCKER - RECOMMENDED)
+--------------------------------------------------
+1. Ensure Docker & Docker Compose are running.
 2. Open terminal in the root directory.
 3. Run: docker-compose up --build
 4. Access:
@@ -27,17 +37,28 @@ The project is containerized using Docker Compose.
    - Real-time: http://localhost:8080
 
 --------------------------------------------------
-3. MANUAL INSTALLATION (4 TERMINALS)
+4. MANUAL INSTALLATION (REPRODUCING FROM SOURCE)
 --------------------------------------------------
-If not using Docker, run these 4 terminals:
+Prerequisites: PHP 8.2+, Node 18+, Composer, NPM, MySQL.
 
-- Terminal 1 (Backend API): cd backend-php && php artisan serve
-- Terminal 2 (WebSocket): cd backend-php && php artisan reverb:start
-- Terminal 3 (Background Jobs): cd backend-php && php artisan queue:work
-- Terminal 4 (Frontend): cd frontend && npm run dev
+A. BACKEND SETUP (/backend-php):
+   1. composer install
+   2. cp .env.example .env (Configure DB and Cloudinary keys)
+   3. php artisan key:generate
+   4. php artisan migrate --seed
+
+B. FRONTEND SETUP (/frontend):
+   1. npm install
+   2. cp .env.example .env
+
+C. RUNNING (Open 4 separate terminals):
+   - Terminal 1: php artisan serve
+   - Terminal 2: php artisan reverb:start
+   - Terminal 3: php artisan queue:work
+   - Terminal 4: npm run dev
 
 --------------------------------------------------
-4. TEST ACCOUNTS
+5. TEST ACCOUNTS (PRE-LOADED DATA)
 --------------------------------------------------
 Account A (Owner):
 - Email: user@example.com
@@ -48,12 +69,12 @@ Account B (Collaborator):
 - Password: password123
 
 --------------------------------------------------
-5. EVALUATION NOTES
+6. EVALUATION NOTES FOR TEACHERS
 --------------------------------------------------
-- Ensure 'queue:work' is running for email features.
-- If real email is not configured, check logs at:
+- REAL-TIME DEMO: Access the same note from two different browsers (e.g. Chrome & Edge) to see real-time updates and presence avatars.
+- EMAIL LOGS: If SMTP is not configured, find activation links in:
   backend-php/storage/logs/laravel.log
-- Use two different browsers to test real-time collaboration features.
+- OFFLINE MODE: Toggle "Offline" in Chrome DevTools to test PWA capabilities.
 
 --------------------------------------------------
 Thank you for evaluating our final project!
