@@ -52,7 +52,7 @@ return [
      */
     'upload_action' => env('CLOUDINARY_UPLOAD_ACTION'),
 
-    'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-    'api_key' => env('CLOUDINARY_API_KEY'),
-    'api_secret' => env('CLOUDINARY_API_SECRET'),
+    'cloud_name' => env('CLOUDINARY_CLOUD_NAME') ?: (env('CLOUDINARY_URL') ? explode('@', env('CLOUDINARY_URL'))[1] : null),
+    'api_key' => env('CLOUDINARY_API_KEY') ?: (env('CLOUDINARY_URL') ? explode(':', explode('//', env('CLOUDINARY_URL'))[1])[0] : null),
+    'api_secret' => env('CLOUDINARY_API_SECRET') ?: (env('CLOUDINARY_URL') ? explode(':', explode('@', env('CLOUDINARY_URL'))[0])[2] : null),
 ];
