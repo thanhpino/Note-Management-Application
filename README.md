@@ -57,10 +57,12 @@ npm install
 cp .env.example .env
 ```
 
-### 4. Running the Project (3 Terminals required)
-- **Terminal 1 (Backend):** `php artisan serve` (Runs at http://localhost:8000)
-- **Terminal 2 (WebSocket):** `php artisan reverb:start` (For Real-time features)
-- **Terminal 3 (Frontend):** `npm run dev` (Runs at http://localhost:5173)
+### 4. Running the Project (4 Terminals required)
+To experience the full functionality (including fast registration and real-time sync):
+- **Terminal 1 (Backend API):** `cd backend-php && php artisan serve`
+- **Terminal 2 (WebSocket):** `cd backend-php && php artisan reverb:start`
+- **Terminal 3 (Background Jobs):** `cd backend-php && php artisan queue:work`
+- **Terminal 4 (Frontend):** `cd frontend && npm run dev`
 
 ---
 
@@ -85,7 +87,7 @@ The project fulfills **28/28** criteria. Highlights include:
 ---
 
 ## 📌 EVALUATION NOTES
-- **Account Activation:** If real email delivery is not configured, use the "Resend Email" button on the dashboard banner to simulate activation or manually update `email_verified_at` in the database.
+- **Account Activation:** Ensure Terminal 3 (`queue:work`) is running. If real email delivery is not configured, check the logs in `backend-php/storage/logs/laravel.log` or manually update `is_verified` to `1` in the `users` table.
 - **Real-time Demo:** Open two different browsers (e.g., Chrome and Edge) to see user avatars appear in the header when accessing the same note.
 
 ---
