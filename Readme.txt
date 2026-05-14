@@ -1,5 +1,7 @@
 # 📝 INTELLIGENT NOTE MANAGEMENT APPLICATION
 --------------------------------------------------
+LIVE DEMO: https://note-management-frontend.onrender.com
+
 TEAM MEMBERS:
 - Truong Minh Thanh (524H0032) - Team Leader
 - Nguyễn Hữu Tân (524H0028)

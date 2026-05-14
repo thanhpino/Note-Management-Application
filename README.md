@@ -1,4 +1,8 @@
+![App Banner](frontend/public/assets/banner.png)
+
 # 📝 INTELLIGENT NOTE MANAGEMENT APPLICATION
+**Live Demo:** [https://note-management-frontend.onrender.com](https://note-management-frontend.onrender.com)
+
 **Team Members:** 
 - Truong Minh Thanh (524H0032) - Team Leader
 - Nguyễn Hữu Tân (524H0028)
