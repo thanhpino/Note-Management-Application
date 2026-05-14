@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'user@example.com',
             'password' => bcrypt('password123'),
-            'email_verified_at' => now(),
+            'is_verified' => 1,
         ]);
 
         // User B
@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Collaborator',
             'email' => 'collaborator@example.com',
             'password' => bcrypt('password123'),
-            'email_verified_at' => now(),
+            'is_verified' => 1,
         ]);
     }
 }
