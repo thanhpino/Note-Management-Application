@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, Camera, Save, ArrowLeft, CheckCircle, ShieldAlert, Loader2 } from 'lucide-react';
 import api from '../services/api';
+import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
@@ -37,20 +38,35 @@ const Profile: React.FC = () => {
 
     if (file.size > 2 * 1024 * 1024) return toast.error('File size too large (max 2MB)');
 
-    const formData = new FormData();
-    formData.append('avatar', file);
-
     setUploading(true);
     try {
-      const res = await api.post('/users/avatar', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      // 1. Get secure signature from our backend
+      const sigRes = await api.get('/users/cloudinary-signature');
+      const { signature, timestamp, api_key, cloud_name, folder } = sigRes.data;
+
+      // 2. Upload directly to Cloudinary (Bypassing our backend for speed)
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('signature', signature);
+      formData.append('timestamp', timestamp);
+      formData.append('api_key', api_key);
+      formData.append('folder', folder);
+
+      const cloudinaryRes = await axios.post(
+        `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
+        formData
+      );
+      
+      const avatarUrl = cloudinaryRes.data.secure_url;
+
+      // 3. Update our database with the new URL
+      const res = await api.post('/users/avatar', { avatar_url: avatarUrl });
       setUser(res.data.user || res.data);
       toast.success('Avatar updated successfully');
     } catch (_error: any) {
+      console.error('Upload error:', _error);
       toast.error(_error.response?.data?.message || 'Failed to upload avatar');
     } finally {
-
       setUploading(false);
     }
   };

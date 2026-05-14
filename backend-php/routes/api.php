@@ -57,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/notes/{id}/images', [NoteController::class, 'removeImage']);
 
     // Users
+    Route::get('/users/cloudinary-signature', [UserController::class, 'getCloudinarySignature']);
     Route::get('/users/profile', [UserController::class, 'profile']);
     Route::put('/users/profile', [UserController::class, 'updateProfile']);
     Route::put('/users/profile/preferences', [UserController::class, 'updatePreferences']);

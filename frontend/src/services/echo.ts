@@ -17,8 +17,9 @@ const echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY || 'notes_key_123',
     wsHost: backendHost,
-    wsPort: 443,
-    forceTLS: true,
+    wsPort: import.meta.env.VITE_REVERB_PORT || 8080,
+    wssPort: import.meta.env.VITE_REVERB_PORT || 443,
+    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
     authEndpoint: `${backendUrl}/broadcasting/auth`,
     auth: {

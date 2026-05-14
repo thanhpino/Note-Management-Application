@@ -47,6 +47,7 @@ class UserController extends Controller
                 'email' => $user->email,
                 'avatar_url' => $user->avatar_url,
                 'avatarUrl' => $user->avatar_url,
+                'is_verified' => (bool)$user->is_verified,
                 'isActivated' => (bool)$user->is_verified,
                 'preferences' => $user->preferences ?? ['darkMode' => false]
             ]
@@ -56,7 +57,8 @@ class UserController extends Controller
     public function updateAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => 'required|image|max:2048',
+            'avatar' => 'nullable|image|max:2048',
+            'avatar_url' => 'nullable|string',
         ]);
 
         $user = $request->user();
@@ -74,6 +76,8 @@ class UserController extends Controller
                     'error' => $e->getMessage()
                 ], 500);
             }
+        } elseif ($request->has('avatar_url')) {
+            $user->update(['avatar_url' => $request->avatar_url]);
         }
 
         return response()->json([
@@ -87,6 +91,7 @@ class UserController extends Controller
                 'email' => $user->email,
                 'avatar_url' => $user->avatar_url,
                 'avatarUrl' => $user->avatar_url,
+                'is_verified' => (bool)$user->is_verified,
                 'isActivated' => (bool)$user->is_verified,
                 'preferences' => $user->preferences ?? ['darkMode' => false]
             ]
@@ -125,5 +130,30 @@ class UserController extends Controller
     public function clearNotification(Request $request)
     {
         return response()->json(['message' => 'Notifications cleared']);
+    }
+
+    public function getCloudinarySignature(Request $request)
+    {
+        $timestamp = time();
+        $apiSecret = env('CLOUDINARY_API_SECRET');
+        $apiKey = env('CLOUDINARY_API_KEY');
+        $cloudName = env('CLOUDINARY_CLOUD_NAME');
+
+        if (!$apiSecret || !$apiKey || !$cloudName) {
+            return response()->json(['message' => 'Cloudinary credentials missing'], 500);
+        }
+
+        // Params to sign (must be sorted alphabetically)
+        // string format: folder=avatars&timestamp=123456789
+        $stringToSign = "folder=avatars&timestamp={$timestamp}";
+        $signature = sha1($stringToSign . $apiSecret);
+
+        return response()->json([
+            'signature' => $signature,
+            'timestamp' => $timestamp,
+            'api_key' => $apiKey,
+            'cloud_name' => $cloudName,
+            'folder' => 'avatars',
+        ]);
     }
 }
