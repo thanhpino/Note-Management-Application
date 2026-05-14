@@ -135,9 +135,9 @@ class UserController extends Controller
     public function getCloudinarySignature(Request $request)
     {
         $timestamp = time();
-        $apiSecret = env('CLOUDINARY_API_SECRET');
-        $apiKey = env('CLOUDINARY_API_KEY');
-        $cloudName = env('CLOUDINARY_CLOUD_NAME');
+        $apiSecret = config('cloudinary.api_secret');
+        $apiKey = config('cloudinary.api_key');
+        $cloudName = config('cloudinary.cloud_name');
 
         if (!$apiSecret || !$apiKey || !$cloudName) {
             return response()->json(['message' => 'Cloudinary credentials missing'], 500);
