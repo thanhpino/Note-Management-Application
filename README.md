@@ -1,7 +1,12 @@
 # 📝 INTELLIGENT NOTE MANAGEMENT APPLICATION
-**Student:** Truong Minh Thanh  
-**ID:** 524H0032  
-**Final Project - Web Application Development**
+**Team Members:** 
+- Truong Minh Thanh (524H0032) - Team Leader
+- Nguyễn Hữu Tân (524H0028)
+- Nguyễn Chí Minh (524H0111)
+
+**Course:** Web Application Development - Final Project
+**GitHub Repository:** [https://github.com/thanhpino/Note-Management-Application](https://github.com/thanhpino/Note-Management-Application)
+**Demo Video:** [Click here to watch the demo video](Link_Video_Demo_Ở_Đây)
 
 ---
 
@@ -91,4 +96,4 @@ The project fulfills **28/28** criteria. Highlights include:
 - **Real-time Demo:** Open two different browsers (e.g., Chrome and Edge) to see user avatars appear in the header when accessing the same note.
 
 ---
-*Thank you for evaluating my final project!*
+*Thank you for evaluating our final project!*

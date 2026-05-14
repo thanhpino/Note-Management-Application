@@ -1,22 +1,21 @@
-INTELLIGENT NOTE MANAGEMENT APPLICATION
-Student: Truong Minh Thanh
-ID: 524H0032
-Final Project - Web Application Development
+# 📝 INTELLIGENT NOTE MANAGEMENT APPLICATION
+--------------------------------------------------
+TEAM MEMBERS:
+- Truong Minh Thanh (524H0032) - Team Leader
+- Nguyễn Hữu Tân (524H0028)
+- Nguyễn Chí Minh (524H0111)
+
+COURSE: Web Application Development - Final Project
+GITHUB: https://github.com/thanhpino/Note-Management-Application
+DEMO VIDEO: [Link_Video_Demo_Ở_Đây]
 
 --------------------------------------------------
-1. PROJECT OVERVIEW
+1. OVERVIEW
 --------------------------------------------------
-The Intelligent Note Management Application is a modern platform that allows users to create, secure, and collaborate on notes in real-time.
-Built with Laravel 11 (Backend) and React Vite (Frontend).
+The Intelligent Note Management Application is a modern platform that allows users to create, secure, and collaborate on notes in real-time. Built with Laravel 11 (Backend) and React Vite (Frontend).
 
 --------------------------------------------------
-2. DEPLOYMENT & ACCESS
---------------------------------------------------
-- Public URL: https://note-management-app.onrender.com/
-- Source Code: Included in the 'source' folder.
-
---------------------------------------------------
-3. RUNNING THE PROJECT (DOCKER)
+2. DEPLOYMENT & ACCESS (DOCKER)
 --------------------------------------------------
 The project is containerized using Docker Compose.
 1. Ensure Docker is running.
@@ -28,7 +27,17 @@ The project is containerized using Docker Compose.
    - Real-time: http://localhost:8080
 
 --------------------------------------------------
-4. TEST ACCOUNTS (PRE-LOADED DATA)
+3. MANUAL INSTALLATION (4 TERMINALS)
+--------------------------------------------------
+If not using Docker, run these 4 terminals:
+
+- Terminal 1 (Backend API): cd backend-php && php artisan serve
+- Terminal 2 (WebSocket): cd backend-php && php artisan reverb:start
+- Terminal 3 (Background Jobs): cd backend-php && php artisan queue:work
+- Terminal 4 (Frontend): cd frontend && npm run dev
+
+--------------------------------------------------
+4. TEST ACCOUNTS
 --------------------------------------------------
 Account A (Owner):
 - Email: user@example.com
@@ -38,19 +47,13 @@ Account B (Collaborator):
 - Email: collaborator@example.com
 - Password: password123
 
-Note: Use the "Resend Email" button on dashboard if you need to simulate email activation.
+--------------------------------------------------
+5. EVALUATION NOTES
+--------------------------------------------------
+- Ensure 'queue:work' is running for email features.
+- If real email is not configured, check logs at:
+  backend-php/storage/logs/laravel.log
+- Use two different browsers to test real-time collaboration features.
 
 --------------------------------------------------
-5. OPTIONAL FEATURES (EXTRA POINTS)
---------------------------------------------------
-- Real-time Collaborative Editing (Laravel Reverb).
-- Password-protected Notes (Custom Hashing).
-- Cloudinary Integration (Image hosting).
-- PWA & Offline Caching (Service Workers).
-- Responsive Design (Glassmorphism UI).
-
---------------------------------------------------
-6. CLEANING INSTRUCTIONS
---------------------------------------------------
-The vendor/ and node_modules/ directories have been removed to reduce size.
-Please run 'composer install' and 'npm install' if not using Docker.
+Thank you for evaluating our final project!
