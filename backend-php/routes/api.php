@@ -5,6 +5,16 @@ use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\LabelController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/run-seed', function () {
+    try {
+        Artisan::call('db:seed', ['--force' => true]);
+        return response()->json(['message' => 'Seeding completed successfully!']);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);
+    }
+});
 use Illuminate\Support\Facades\Broadcast;
 
 // WebSocket Auth (Đưa vào đây để fix CORS)
