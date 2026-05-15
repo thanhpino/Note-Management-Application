@@ -10,7 +10,7 @@
 
 **Course:** Web Application Development - Final Project
 **GitHub Repository:** [https://github.com/thanhpino/Note-Management-Application](https://github.com/thanhpino/Note-Management-Application)
-**Demo Video:** [Click here to watch the demo video](Link_Video_Demo_Ở_Đây)
+**Demo Video:** [Click here to watch the demo video](https://youtu.be/jSLratt7o9Y)
 
 ---
 

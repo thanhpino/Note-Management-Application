@@ -9,7 +9,7 @@ TEAM MEMBERS:
 
 COURSE: Web Application Development - Final Project
 GITHUB: https://github.com/thanhpino/Note-Management-Application
-DEMO VIDEO: [Link_Video_Demo_Ở_Đây]
+DEMO VIDEO: https://youtu.be/jSLratt7o9Y
 
 --------------------------------------------------
 1. OVERVIEW
